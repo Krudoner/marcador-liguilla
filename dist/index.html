@@ -7,9 +7,9 @@
 <!-- ============================= -->
 <!-- SEO ON-PAGE — ETIQUETAS META  -->
 <!-- ============================= -->
-<title>Calculadora de Puntos y Tabla de Clasificación de Fútbol en Vivo | Liguillas y Torneos</title>
-<meta name="description" content="Calcula la tabla de clasificación de tu liga, liguilla o torneo de fútbol en tiempo real. Añade equipos, introduce resultados y genera el calendario automáticamente. Gratis, sin registro y desde el móvil.">
-<meta name="keywords" content="calculadora puntos liga futbol, tabla de clasificacion futbol, generador de clasificaciones, calculadora liguilla, tabla de posiciones torneo futbol, calendario round robin futbol">
+<title>Marcador Liguilla — Generador y gestor de torneos multi-deporte</title>
+<meta name="description" content="Crea, organiza y gestiona torneos, liguillas y cuadros eliminatorios para cualquier deporte o eSports. Genera calendarios, registra resultados y comparte tablas en tiempo real.">
+<meta name="keywords" content="torneos, liguillas, tablas de posiciones, generador de calendarios, eSports, fútbol, baloncesto, pádel, voleibol">
 <meta name="author" content="Marcador Liguilla">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://marcador-liguilla.netlify.app/">
@@ -19,17 +19,17 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:url" content="https://marcador-liguilla.netlify.app/">
 <meta property="og:site_name" content="Marcador Liguilla">
-<meta property="og:title" content="Calculadora de Puntos y Tabla de Clasificación de Fútbol en Vivo">
-<meta property="og:description" content="Añade equipos, apunta los resultados y mira cómo se actualiza la tabla de tu liguilla al instante. Ideal para ligas de barrio, peñas y torneos amateur.">
+<meta property="og:title" content="Generador de torneos y tablas de posiciones — Marcador Liguilla">
+<meta property="og:description" content="Organiza liguillas y torneos multideporte, comparte resultados y muestra clasificaciones en tiempo real. Perfecto para eSports, fútbol, baloncesto y eventos locales.">
 <meta property="og:image" content="https://marcador-liguilla.netlify.app/og-marcador-liguilla.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Tabla de clasificación de una liguilla de fútbol calculada en vivo">
+<meta property="og:image:alt" content="Tabla de posiciones y cuadro eliminatorio generado por Marcador Liguilla">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Calculadora de Puntos y Tabla de Clasificación de Fútbol en Vivo">
-<meta name="twitter:description" content="Genera el calendario, introduce resultados y calcula la clasificación de tu liguilla en tiempo real, gratis y desde el móvil.">
+<meta name="twitter:title" content="Generador de torneos y tablas de posiciones — Marcador Liguilla">
+<meta name="twitter:description" content="Crea y comparte clasificaciones y cuadros eliminatorios para cualquier deporte o competición en tiempo real.">
 <meta name="twitter:image" content="https://marcador-liguilla.netlify.app/og-marcador-liguilla.jpg">
 
 <meta name="theme-color" content="#0F3D2E">
@@ -40,12 +40,12 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Marcador Liguilla — Calculadora de Puntos y Clasificación de Fútbol",
+  "name": "Marcador Liguilla — Generador de torneos y tablas de posiciones",
   "url": "https://marcador-liguilla.netlify.app/",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-  "description": "Herramienta gratuita para calcular en tiempo real la tabla de clasificación de una liga, liguilla o torneo de fútbol amateur.",
+  "description": "Crea, organiza y comparte torneos, liguillas y cuadros eliminatorios para deportes y competiciones digitales.",
   "inLanguage": "es"
 }
 </script>
@@ -59,6 +59,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+  :root{
+    --bg: #F7F6F0;
+    --text: #08120f;
+    --muted: #163225;
+    --accent: #0F3D2E;
+    --gold: #E3B23C;
+  }
+  .theme-dark{ --bg:#08120f; --text:#e6f6f0; --muted:#9bd9b8; --accent:#0f7a4b; --gold:#b38b2a }
+  .theme-light{ --bg:#ffffff; --text:#07211a; --muted:#335a48; --accent:#0F3D2E; --gold:#E3B23C }
+  .theme-neon{ --bg:#0b0714; --text:#e6f3ff; --muted:#9bf; --accent:#8affc1; --gold:#ff66c4 }
+  .theme-minimal{ --bg:#f6f6f6; --text:#0b0b0b; --muted:#6b6b6b; --accent:#444; --gold:#bdbdbd }
+  body{ background-color:var(--bg); color:var(--text); }
+
   html { scroll-behavior: smooth; }
   body { font-family: 'Inter', sans-serif; background-color: #F7F6F0; }
   h1, h2, .font-score { font-family: 'Oswald', sans-serif; }
@@ -122,7 +135,12 @@
     try { getAnalytics(app); } catch(e) { /* ignore analytics errors */ }
     const db = getFirestore(app);
     window._fb = { app, db, doc, getDoc, setDoc, onSnapshot, serverTimestamp };
-    // App Check (reCAPTCHA v3) - replace RECAPTCHA_SITE_KEY with your site key
+    // App Check (reCAPTCHA v3)
+    // IMPORTANT: Before enabling App Check in production, verify that this SITE KEY
+    // is correctly registered and linked in the Firebase Console (App Check -> Register)
+    // and that your backend verification (if any) accepts App Check tokens. Do NOT
+    // commit server-side secrets to the frontend. Only the SITE KEY is public.
+    // Replace RECAPTCHA_SITE_KEY below with your site key from Google/Firebase.
     const RECAPTCHA_SITE_KEY = '6LfG27AtAAAAALVUhtCKfz8cTZjH-8aBIhdBZjGP';
     if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== 'REPLACE_WITH_RECAPTCHA_V3_SITE_KEY') {
       try {
@@ -140,10 +158,9 @@
     console.warn('No se pudo inicializar Firebase modular', e);
   }
 </script>
-</head>
-
-<!-- Google AdSense -->
+<!-- Google AdSense (moved inside <head> for correct placement) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9379758602295375" crossorigin="anonymous"></script>
+</head>
 
 <body class="text-ink-900 antialiased">
 
@@ -163,6 +180,19 @@
       <button id="btn-share-info" aria-label="Info" title="Info" class="ml-2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-chalk-50 text-xs font-semibold flex items-center justify-center">i</button>
       <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2"></span>
       <div class="ml-2 inline-flex items-center gap-1">
+        <div id="sport-picker" class="inline-flex items-center gap-2 mr-2">
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Basket</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Volei</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="esports" title="E-Sports">🎮 <span class="ml-1">E-Sports</span></button>
+        </div>
+        <div id="theme-picker" class="inline-flex items-center gap-2">
+          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="light" title="Claro">🌤️</button>
+          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="dark" title="Oscuro">🌙</button>
+          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="neon" title="Neón">✨</button>
+          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="minimal" title="Minimal">⚪</button>
+        </div>
         <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
         <button id="lang-en" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">EN</button>
       </div>
@@ -180,6 +210,23 @@
     <p id="hero-desc" class="mt-3 text-ink-900/70 text-base max-w-xl mx-auto">
       Añade tus equipos, genera el calendario y apunta los resultados: la tabla se actualiza sola, partido a partido.
     </p>
+  </section>
+
+  <!-- 4. PLAYOFFS / ELIMINATORIAS -->
+  <section id="playoffs" aria-labelledby="playoffs-h2" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-5">
+    <div class="flex items-center justify-between mb-2">
+      <h2 id="playoffs-h2" class="font-score text-xl text-pitch-900"></h2>
+      <div class="flex items-center gap-2">
+        <label class="text-sm"> <select id="playoff-size" class="rounded-lg border border-ink-900/15 px-2 py-1 text-sm">
+          <option value="4">4</option>
+          <option value="8">8</option>
+          <option value="16">16</option>
+        </select> </label>
+        <button id="btn-generate-playoffs" class="rounded-lg bg-gold-500 hover:bg-gold-400 text-pitch-900 text-sm font-bold px-3 py-2">Generar eliminatorias</button>
+      </div>
+    </div>
+    <p id="playoffs-empty" class="text-sm text-ink-900/60 mb-4"></p>
+    <div id="playoff-bracket" class="space-y-4"></div>
   </section>
 
   <!-- 1. EQUIPOS -->
@@ -339,6 +386,8 @@ let state = {
   teams: [],
   matches: [],
   ptsVictoria: 3,
+  ptsEmpate: 1,
+  sport: 'football',
   zonaDescenso: 1,
   idaVuelta: false
 };
@@ -478,6 +527,23 @@ const ptsVictoriaSel = document.getElementById('pts-victoria');
 const zonaDescensoIn = document.getElementById('zona-descenso');
 const idaVueltaChk   = document.getElementById('ida-vuelta');
 const btnGenerar     = document.getElementById('btn-generar');
+const sportPicker    = document.getElementById('sport-picker');
+const sportButtons   = sportPicker ? Array.from(sportPicker.querySelectorAll('.sport-btn')) : [];
+const themePicker    = document.getElementById('theme-picker');
+const themeButtons   = themePicker ? Array.from(themePicker.querySelectorAll('.theme-btn')) : [];
+const THEME_KEY = 'liguilla_theme_v1';
+
+function applyTheme(theme) {
+  const body = document.body;
+  body.classList.remove('theme-dark','theme-light','theme-neon','theme-minimal');
+  if (theme === 'dark') body.classList.add('theme-dark');
+  else if (theme === 'neon') body.classList.add('theme-neon');
+  else if (theme === 'minimal') body.classList.add('theme-minimal');
+  else body.classList.add('theme-light');
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  themeButtons.forEach(b => { if (b.dataset.theme === theme) b.classList.add('bg-gold-400','text-pitch-900'); else b.classList.remove('bg-gold-400','text-pitch-900'); });
+}
+themeButtons.forEach(b => b.addEventListener('click', () => applyTheme(b.dataset.theme)));
 
 const btnAddMatch    = document.getElementById('btn-add-match');
 const manualForm     = document.getElementById('manual-match-form');
@@ -544,6 +610,67 @@ if (modalShareCopy) {
 
 // Close modals with Escape
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModal('modal-info'); closeModal('modal-share'); } });
+
+/* ---------------------------------------------------
+   SELECTOR DE DEPORTE: lógica y terminología
+--------------------------------------------------- */
+function setSport(sportKey, save = true) {
+  state.sport = sportKey || 'football';
+  // defaults per sport
+  if (state.sport === 'football') { state.ptsVictoria = 3; state.ptsEmpate = 1; }
+  else if (state.sport === 'basketball' || state.sport === 'esports') { state.ptsVictoria = 2; state.ptsEmpate = 0; }
+  else if (state.sport === 'racket' || state.sport === 'volley') { state.ptsVictoria = 2; state.ptsEmpate = 0; }
+  // reflect in UI
+  if (ptsVictoriaSel) ptsVictoriaSel.value = String(state.ptsVictoria);
+  applySportTerminology();
+  renderMatches(); renderStandings();
+  if (save) saveState();
+  // update active sport button visuals
+  sportButtons.forEach(btn => { btn.classList.remove('bg-gold-400','text-pitch-900','font-bold'); if (btn.dataset.sport === state.sport) btn.classList.add('bg-gold-400','text-pitch-900','font-bold'); });
+}
+
+function applySportTerminology() {
+  // update table headers and small labels based on sport
+  const sport = state.sport || 'football';
+  if (sport === 'football') {
+    setText('th-gf', tr('thGF'));
+    setText('th-gc', tr('thGC'));
+    setText('th-dg', tr('thDG'));
+    // helper text
+  } else if (sport === 'basketball' || sport === 'esports') {
+    setText('th-gf', tr('thPTS') || 'Pts');
+    setText('th-gc', tr('thOPP') || 'Opp');
+    setText('th-dg', tr('thDP') || 'DP');
+  } else if (sport === 'racket' || sport === 'volley') {
+    setText('th-gf', tr('thSets') || 'Sets');
+    setText('th-gc', tr('thSetsLost') || 'Sets-');
+    setText('th-dg', tr('thSD') || 'SD');
+  }
+
+  // update paragraph that mentions goals/points in the UI description
+  const partidosP = document.querySelector('#partidos p');
+  if (partidosP) {
+    if (sport === 'football') partidosP.textContent = tr('matchesDescGoals');
+    else if (sport === 'basketball') partidosP.textContent = tr('matchesDescPoints');
+    else if (sport === 'esports') partidosP.textContent = tr('matchesDescMatches');
+    else partidosP.textContent = tr('matchesDescSets');
+  }
+}
+
+function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+
+// event delegation for sport buttons
+sportButtons.forEach(btn => {
+  btn.addEventListener('click', () => setSport(btn.dataset.sport));
+});
+
+function getScoreLabel(team) {
+  const sport = state.sport || 'football';
+  if (sport === 'football') return tr('goalsOf', { team });
+  if (sport === 'basketball') return tr('pointsOf', { team });
+  if (sport === 'esports') return tr('matchesOf', { team });
+  return tr('setsOf', { team });
+}
 
 /* ---------------------------------------------------
    UI: cloud connection helpers
@@ -653,7 +780,7 @@ function generarCalendario() {
   let id = 1;
   jornadas.forEach((pares, idx) => {
     pares.forEach(([a, b]) => {
-      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null });
+      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null, ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
     });
   });
 
@@ -661,7 +788,7 @@ function generarCalendario() {
     const totalIda = jornadas.length;
     jornadas.forEach((pares, idx) => {
       pares.forEach(([a, b]) => {
-        nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null });
+        nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null, ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
       });
     });
   }
@@ -686,6 +813,10 @@ btnConfirmManual.addEventListener('click', () => {
   if (!a || !b || a === b) { alert(tr('chooseDifferentTeams')); return; }
   const maxJornada = state.matches.reduce((m, x) => Math.max(m, x.jornada), 0);
   state.matches.push({ id: Date.now(), jornada: maxJornada + 1, a, b, sa: null, sb: null });
+  // add stats fields
+  state.matches[state.matches.length-1].ya = null; state.matches[state.matches.length-1].yb = null;
+  state.matches[state.matches.length-1].ra = null; state.matches[state.matches.length-1].rb = null;
+  state.matches[state.matches.length-1].fa = null; state.matches[state.matches.length-1].fb = null;
   saveState();
   manualForm.classList.add('hidden');
   renderMatches();
@@ -721,20 +852,29 @@ function renderMatches() {
     state.matches.filter(m => m.jornada === j).forEach(m => {
       const row = document.createElement('div');
       row.className = 'flex items-center gap-2 bg-chalk-50 rounded-lg px-3 py-2';
-      const labelA = tr('goalsOf', { team: escapeHtml(m.a) });
-      const labelB = tr('goalsOf', { team: escapeHtml(m.b) });
+      const labelA = getScoreLabel(m.a);
+      const labelB = getScoreLabel(m.b);
       row.innerHTML = `
         <span class="flex-1 text-sm font-medium text-right truncate">${escapeHtml(m.a)}</span>
-        <input type="number" min="0" max="99" inputmode="numeric" aria-label="${labelA}"
+        <input type="number" min="0" max="999" inputmode="numeric" aria-label="${labelA}"
           class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
           value="${m.sa ?? ''}" data-id="${m.id}" data-side="sa">
         <span class="text-ink-900/30 text-xs">–</span>
-        <input type="number" min="0" max="99" inputmode="numeric" aria-label="${labelB}"
+        <input type="number" min="0" max="999" inputmode="numeric" aria-label="${labelB}"
           class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
           value="${m.sb ?? ''}" data-id="${m.id}" data-side="sb">
         <span class="flex-1 text-sm font-medium truncate">${escapeHtml(m.b)}</span>
+        <button type="button" class="stats-toggle shrink-0 ml-2 text-ink-900/40 hover:text-ink-900 text-xs w-7 h-7 flex items-center justify-center" data-id="${m.id}" aria-expanded="false">⚙</button>
         <button type="button" aria-label="Eliminar partido" data-id="${m.id}"
-          class="remove-match shrink-0 text-ink-900/30 hover:text-card-600 text-xs w-6 h-6 flex items-center justify-center">✕</button>
+          class="remove-match shrink-0 ml-1 text-ink-900/30 hover:text-card-600 text-xs w-6 h-6 flex items-center justify-center">✕</button>
+        <div class="match-stats hidden w-full mt-2 grid grid-cols-3 gap-2 col-span-6" data-id="${m.id}">
+          <div class="text-xs text-ink-900/70">${tr('yellowCards')}: <input class="stat-input w-12 ml-2" type="number" min="0" max="99" data-id="${m.id}" data-stat="ya" value="${m.ya ?? ''}"></div>
+          <div class="text-xs text-ink-900/70">${tr('redCards')}: <input class="stat-input w-12 ml-2" type="number" min="0" max="99" data-id="${m.id}" data-stat="ra" value="${m.ra ?? ''}"></div>
+          <div class="text-xs text-ink-900/70">${tr('fouls')}: <input class="stat-input w-12 ml-2" type="number" min="0" max="999" data-id="${m.id}" data-stat="fa" value="${m.fa ?? ''}"></div>
+          <div class="text-xs text-ink-900/70">${tr('yellowCardsB')}: <input class="stat-input w-12 ml-2" type="number" min="0" max="99" data-id="${m.id}" data-stat="yb" value="${m.yb ?? ''}"></div>
+          <div class="text-xs text-ink-900/70">${tr('redCardsB')}: <input class="stat-input w-12 ml-2" type="number" min="0" max="99" data-id="${m.id}" data-stat="rb" value="${m.rb ?? ''}"></div>
+          <div class="text-xs text-ink-900/70">${tr('foulsB')}: <input class="stat-input w-12 ml-2" type="number" min="0" max="999" data-id="${m.id}" data-stat="fb" value="${m.fb ?? ''}"></div>
+        </div>
       `;
       rows.appendChild(row);
     });
@@ -744,6 +884,19 @@ function renderMatches() {
 
   matchListEl.querySelectorAll('.score-input').forEach(inp => {
     inp.addEventListener('input', onScoreChange);
+  });
+  matchListEl.querySelectorAll('.stat-input').forEach(inp => {
+    inp.addEventListener('input', onStatChange);
+  });
+  matchListEl.querySelectorAll('.stats-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const statsEl = matchListEl.querySelector(`.match-stats[data-id="${id}"]`);
+      if (!statsEl) return;
+      const opened = !statsEl.classList.contains('hidden');
+      if (opened) { statsEl.classList.add('hidden'); btn.setAttribute('aria-expanded','false'); }
+      else { statsEl.classList.remove('hidden'); btn.setAttribute('aria-expanded','true'); }
+    });
   });
   matchListEl.querySelectorAll('.remove-match').forEach(btn => {
     btn.addEventListener('click', () => removeMatch(Number(btn.dataset.id)));
@@ -761,13 +914,24 @@ function onScoreChange(e) {
   renderStandings();
 }
 
+function onStatChange(e) {
+  const id = Number(e.target.dataset.id);
+  const stat = e.target.dataset.stat;
+  const raw = e.target.value;
+  const match = state.matches.find(m => m.id === id);
+  if (!match) return;
+  match[stat] = raw === '' ? null : Math.max(0, Number(raw));
+  saveState();
+  renderStandings();
+}
+
 /* ---------------------------------------------------
    CÁLCULO Y RENDER DE LA CLASIFICACIÓN
 --------------------------------------------------- */
 function calcularClasificacion() {
   const tabla = {};
   state.teams.forEach(t => {
-    tabla[t] = { equipo: t, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+    tabla[t] = { equipo: t, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0, ya:0, ra:0, fa:0 };
   });
 
   state.matches.forEach(m => {
@@ -776,17 +940,50 @@ function calcularClasificacion() {
     A.pj++; B.pj++;
     A.gf += m.sa; A.gc += m.sb;
     B.gf += m.sb; B.gc += m.sa;
+    // disciplinary and fouls
+    A.ya += Number(m.ya || 0); B.ya += Number(m.yb || 0);
+    A.ra += Number(m.ra || 0); B.ra += Number(m.rb || 0);
+    A.fa += Number(m.fa || 0); B.fa += Number(m.fb || 0);
 
-    if (m.sa > m.sb) { A.pg++; A.pts += state.ptsVictoria; B.pp++; }
-    else if (m.sa < m.sb) { B.pg++; B.pts += state.ptsVictoria; A.pp++; }
-    else { A.pe++; B.pe++; A.pts += 1; B.pts += 1; }
+    if (m.sa > m.sb) { A.pg++; A.pts += Number(state.ptsVictoria || 0); B.pp++; }
+    else if (m.sa < m.sb) { B.pg++; B.pts += Number(state.ptsVictoria || 0); A.pp++; }
+    else { A.pe++; B.pe++; A.pts += Number(state.ptsEmpate || 0); B.pts += Number(state.ptsEmpate || 0); }
   });
 
   Object.values(tabla).forEach(t => { t.dg = t.gf - t.gc; });
+  const list = Object.values(tabla);
+  // helper: head-to-head points among two teams
+  function headToHeadPoints(teamA, teamB) {
+    let ptsA = 0, ptsB = 0;
+    state.matches.forEach(m => {
+      if (!m || m.sa === null || m.sb === null) return;
+      const a = m.a, b = m.b;
+      if ((a === teamA && b === teamB) || (a === teamB && b === teamA)) {
+        if (m.sa > m.sb) { if (a === teamA) ptsA += Number(state.ptsVictoria||0); else ptsB += Number(state.ptsVictoria||0); }
+        else if (m.sa < m.sb) { if (a === teamA) ptsB += Number(state.ptsVictoria||0); else ptsA += Number(state.ptsVictoria||0); }
+        else { ptsA += Number(state.ptsEmpate||0); ptsB += Number(state.ptsEmpate||0); }
+      }
+    });
+    return { ptsA, ptsB };
+  }
 
-  return Object.values(tabla).sort((x, y) =>
-    y.pts - x.pts || y.dg - x.dg || y.gf - x.gf || x.equipo.localeCompare(y.equipo)
-  );
+  list.sort((x, y) => {
+    // primary: pts, goal diff, goals for
+    if (y.pts !== x.pts) return y.pts - x.pts;
+    if (y.dg !== x.dg) return y.dg - x.dg;
+    if (y.gf !== x.gf) return y.gf - x.gf;
+    // head-to-head
+    const hh = headToHeadPoints(x.equipo, y.equipo);
+    if (hh.ptsA !== hh.ptsB) return hh.ptsB - hh.ptsA; // higher head-to-head ranks higher
+    // fewer red cards
+    if ((x.ra || 0) !== (y.ra || 0)) return (x.ra || 0) - (y.ra || 0);
+    // fewer yellow cards
+    if ((x.ya || 0) !== (y.ya || 0)) return (x.ya || 0) - (y.ya || 0);
+    // fewer fouls
+    if ((x.fa || 0) !== (y.fa || 0)) return (x.fa || 0) - (y.fa || 0);
+    return x.equipo.localeCompare(y.equipo);
+  });
+  return list;
 }
 
 function renderStandings() {
@@ -820,6 +1017,93 @@ function renderStandings() {
 /* ---------------------------------------------------
    UTIL / Botones: compartir y exportar imagen
 --------------------------------------------------- */
+// ------------------ PLAYOFFS / ELIMINATORIAS ------------------
+function generatePlayoffs() {
+  const sizeSel = document.getElementById('playoff-size');
+  const n = Number(sizeSel ? sizeSel.value : 4);
+  const standings = calcularClasificacion();
+  if (standings.length < 2) { alert(tr('needAtLeast2TeamsGenerate')); return; }
+  const teams = standings.slice(0, n).map(s => s.equipo);
+  // build rounds
+  const rounds = [];
+  // first round pairings 1 vs n, 2 vs n-1, etc
+  const firstRound = [];
+  for (let i = 0; i < teams.length / 2; i++) {
+    const a = teams[i]; const b = teams[teams.length - 1 - i];
+    firstRound.push({ id: Date.now() + i, a, b, sa: null, sb: null });
+  }
+  rounds.push(firstRound);
+  // create empty next rounds
+  let prev = firstRound.length;
+  while (prev > 1) { rounds.push(new Array(prev/2).fill(null).map((_, idx) => ({ id: Date.now()+Math.random()+idx, a: null, b: null, sa: null, sb: null }))); prev = prev/2; }
+  state.playoffs = { rounds };
+  saveState();
+  renderPlayoffs();
+}
+
+function renderPlayoffs() {
+  const container = document.getElementById('playoff-bracket');
+  const emptyMsg = document.getElementById('playoffs-empty');
+  container.innerHTML = '';
+  if (!state.playoffs || !state.playoffs.rounds || state.playoffs.rounds.length === 0) {
+    if (emptyMsg) emptyMsg.textContent = tr('playoffsEmpty');
+    return;
+  }
+  emptyMsg.textContent = '';
+  state.playoffs.rounds.forEach((round, rIdx) => {
+    const roundWrap = document.createElement('div');
+    roundWrap.className = 'bg-chalk-50 rounded-lg p-2';
+    const h = document.createElement('h4'); h.className = 'font-semibold text-sm'; h.textContent = tr('playoffRound') + ' ' + (rIdx+1);
+    roundWrap.appendChild(h);
+    round.forEach((m, mIdx) => {
+      const row = document.createElement('div'); row.className = 'flex items-center gap-2 py-2';
+      const aLabel = m && m.a ? m.a : '—';
+      const bLabel = m && m.b ? m.b : '—';
+      row.innerHTML = `<div class="flex-1 text-sm truncate">${escapeHtml(aLabel)}</div>
+        <input data-round="${rIdx}" data-index="${mIdx}" data-side="sa" class="playoff-score w-12 text-center rounded-md border px-2" value="${m && m.sa!=null ? m.sa : ''}" />
+        <span class="mx-1">vs</span>
+        <input data-round="${rIdx}" data-index="${mIdx}" data-side="sb" class="playoff-score w-12 text-center rounded-md border px-2" value="${m && m.sb!=null ? m.sb : ''}" />
+        <div class="flex-1 text-sm truncate text-right">${escapeHtml(bLabel)}</div>`;
+      roundWrap.appendChild(row);
+    });
+    container.appendChild(roundWrap);
+  });
+  // attach listeners
+  document.querySelectorAll('.playoff-score').forEach(inp => inp.addEventListener('input', onPlayoffScoreChange));
+}
+
+function onPlayoffScoreChange(e) {
+  const r = Number(e.target.dataset.round);
+  const idx = Number(e.target.dataset.index);
+  const side = e.target.dataset.side;
+  const val = e.target.value === '' ? null : Number(e.target.value);
+  if (!state.playoffs || !state.playoffs.rounds) return;
+  const match = state.playoffs.rounds[r][idx];
+  if (!match) return;
+  match[side] = val;
+  // if both scores present, determine winner and advance
+  const sa = match.sa, sb = match.sb;
+  if (sa !== null && sb !== null) {
+    const winner = sa > sb ? match.a : (sb > sa ? match.b : null);
+    // place winner in next round slot
+    if (winner && state.playoffs.rounds[r+1]) {
+      const nextIdx = Math.floor(idx/2);
+      const slot = state.playoffs.rounds[r+1][nextIdx];
+      if (slot) {
+        if (idx % 2 === 0) slot.a = winner; else slot.b = winner;
+      }
+    }
+  }
+  saveState();
+  renderPlayoffs();
+}
+
+// wire playoffs UI events
+const btnGeneratePlayoffs = document.getElementById('btn-generate-playoffs');
+if (btnGeneratePlayoffs) btnGeneratePlayoffs.addEventListener('click', generatePlayoffs);
+const playoffSizeSel = document.getElementById('playoff-size');
+if (playoffSizeSel) playoffSizeSel.addEventListener('change', () => {});
+
 if (btnShareCloud) {
   btnShareCloud.addEventListener('click', async () => {
     initFirebase();
@@ -885,9 +1169,9 @@ const LANG_KEY = 'liguilla_lang_v1';
 const translations = {
   es: {
     siteName: 'MARCADOR LIGUILLA',
-    siteSub: 'Clasificación en vivo, sin registro',
-    heroTitle: 'Calculadora de puntos y clasificación de fútbol en directo',
-    heroDesc: 'Añade tus equipos, genera el calendario y apunta los resultados: la tabla se actualiza sola, partido a partido.',
+    siteSub: 'Gestor de torneos y tablas de posiciones',
+    heroTitle: 'Crea y gestiona torneos y liguillas multideporte',
+    heroDesc: 'Añade equipos, genera calendarios, registra resultados y comparte clasificaciones y cuadros eliminatorios en tiempo real.',
     equiposH2: '1. Equipos de tu liguilla',
     teamPlaceholder: 'Ej. Atlético Bar Pepe',
     addTeam: 'Añadir',
@@ -905,9 +1189,9 @@ const translations = {
     thPos: '#', thTeam: 'Equipo', thPJ: 'PJ', thPG: 'PG', thPE: 'PE', thPP: 'PP', thGF: 'GF', thGC: 'GC', thDG: 'DG', thPts: 'Pts',
     exportImg: 'Exportar como imagen',
     copyLink: 'Copiar enlace',
-    ayudaP1: 'En la mayoría de ligas y liguillas de fútbol amateur, cada equipo suma <strong>3 puntos por victoria</strong>, <strong>1 punto por empate</strong> y <strong>0 puntos por derrota</strong>. Esta calculadora aplica ese sistema de forma automática cada vez que introduces un resultado.',
-    ayudaP2: 'Cuando dos o más equipos empatan a puntos, esta herramienta los ordena por <strong>diferencia de goles</strong> (goles a favor menos goles en contra) y, si el empate persiste, por goles a favor.',
-    ayudaP3: 'El generador de calendario crea automáticamente todos los enfrentamientos por el método de todos contra todos (round robin), a una vuelta o ida y vuelta.',
+    ayudaP1: 'Crea calendarios y registra resultados para cualquier deporte o competición. Las reglas de puntuación son configurables según la disciplina.',
+    ayudaP2: 'Los criterios de desempate incluyen puntos, diferencia, goles/puntos a favor, enfrentamientos directos y métricas disciplinarias si procede.',
+    ayudaP3: 'El generador de calendario crea enfrentamientos todos contra todos (ida o ida y vuelta). Usa la sección de eliminatorias para generar cuadros de playoff.',
     // dinámicos y mensajes
     round: 'Jornada {n}',
     needAtLeast2TeamsGenerate: 'Añade al menos 2 equipos para generar el calendario.',
@@ -927,6 +1211,46 @@ const translations = {
     generatingImage: 'Generando imagen...',
     imageError: 'Error al generar la imagen',
     goalsOf: 'Goles de {team}',
+    pointsOf: 'Puntos de {team}',
+    matchesOf: 'Partidas de {team}',
+    setsOf: 'Sets de {team}',
+    thPTS: 'Puntos',
+    thDP: 'DP',
+    thSets: 'Sets',
+    thSetsLost: 'Sets-',
+    thSD: 'SD',
+    matchesDescGoals: 'Rellena los goles de cada equipo. La clasificación se recalcula al instante.',
+    matchesDescPoints: 'Rellena los puntos de cada equipo (p. ej. puntos en baloncesto). La clasificación se recalcula al instante.',
+    matchesDescMatches: 'Rellena las partidas/sets de cada enfrentamiento. La clasificación se recalcula al instante.',
+    matchesDescSets: 'Rellena los sets ganados por cada equipo. La clasificación se recalcula al instante.',
+    yellowCards: 'Tarjetas amarillas',
+    redCards: 'Tarjetas rojas',
+    fouls: 'Faltas',
+    yellowCardsB: 'Tarjetas amarillas (B)',
+    redCardsB: 'Tarjetas rojas (B)',
+    foulsB: 'Faltas (B)',
+    playoffsTitle: '4. Eliminatorias / Playoffs',
+    generatePlayoffs: 'Generar cuadro eliminatorio',
+    selectPlayoffSize: 'Equipos en playoffs',
+    playoffWinner: 'Ganador',
+    playoffRound: 'Ronda',
+    playoffsEmpty: 'No hay eliminatorias generadas.',
+    themeLight: 'Claro',
+    themeDark: 'Oscuro',
+    themeNeon: 'Neón',
+    themeMinimal: 'Minimal',
+    pointsOf: 'Puntos de {team}',
+    matchesOf: 'Partidas de {team}',
+    setsOf: 'Sets de {team}',
+    thPTS: 'Puntos',
+    thDP: 'DP',
+    thSets: 'Sets',
+    thSetsLost: 'Sets-',
+    thSD: 'SD',
+    matchesDescGoals: 'Rellena los goles de cada equipo. La clasificación se recalcula al instante.',
+    matchesDescPoints: 'Rellena los puntos de cada equipo (p. ej. puntos en baloncesto). La clasificación se recalcula al instante.',
+    matchesDescMatches: 'Rellena las partidas/sets de cada enfrentamiento. La clasificación se recalcula al instante.',
+    matchesDescSets: 'Rellena los sets ganados por cada equipo. La clasificación se recalcula al instante.',
     firebaseNotConfigured: 'Configura Firebase en el código (firebaseConfig) antes de usar la nube.',
     cannotCopyLink: 'No se pudo copiar el enlace',
     viewerRemote: 'Visor remoto (Firebase no configurado)',
@@ -940,18 +1264,24 @@ const translations = {
     copied: '¡Copiado!',
     modalClose: 'Cerrar',
     infoButtonAria: 'Información sobre compartir',
-    footerParagraph: 'Marcador Liguilla es una calculadora de puntos de liga de fútbol gratuita, pensada para organizadores de liguillas de barrio, ligas de empresa, torneos amateur y competiciones entre amigos. Con este generador de clasificaciones puedes crear el calendario de partidos, registrar resultados desde el móvil y consultar la tabla de posiciones actualizada al momento, sin necesidad de hojas de cálculo ni registrarte.',
+    footerParagraph: 'Marcador Liguilla es una herramienta gratuita para crear, organizar y compartir torneos y liguillas multideporte. Ideal para eventos locales, eSports y competiciones informales.',
     footerCopyright: '© {year} Marcador Liguilla · Calculadora de clasificación de fútbol online',
     standingsEmpty: 'La tabla aparecerá aquí en cuanto añadas equipos.',
     vsLabel: 'vs',
     legendChampion: 'Clasifica',
     legendRelegation: 'Descenso'
+    ,
+    sportFootball: 'Fútbol (11 / Sala / 7)',
+    sportBasketball: 'Baloncesto',
+    sportRacket: 'Pádel / Tenis',
+    sportVolley: 'Voleibol',
+    sportEsports: 'E-Sports'
   },
   en: {
     siteName: 'SCOREBOARD',
-    siteSub: 'Live standings, no signup',
-    heroTitle: 'Points calculator and live football standings',
-    heroDesc: 'Add teams, generate the schedule and record results: the table updates automatically, match by match.',
+    siteSub: 'Tournament & standings manager',
+    heroTitle: 'Create and manage multi-sport tournaments and leagues',
+    heroDesc: 'Add teams, generate schedules, record results and share standings and playoff brackets in real time.',
     equiposH2: '1. Your teams',
     teamPlaceholder: 'e.g. Atlético Bar Pepe',
     addTeam: 'Add',
@@ -969,9 +1299,9 @@ const translations = {
     thPos: '#', thTeam: 'Team', thPJ: 'MP', thPG: 'W', thPE: 'D', thPP: 'L', thGF: 'GF', thGC: 'GA', thDG: 'GD', thPts: 'Pts',
     exportImg: 'Export as image',
     copyLink: 'Copy link',
-    ayudaP1: 'In most amateur leagues, a team earns <strong>3 points for a win</strong>, <strong>1 point for a draw</strong> and <strong>0 for a loss</strong>. This calculator applies that system automatically when you enter results.',
-    ayudaP2: 'When two or more teams are tied on points, this tool orders them by <strong>goal difference</strong> (goals for minus goals against) and then by goals for.',
-    ayudaP3: 'The schedule generator creates all matchups using a round-robin method, single or double round as selected.',
+    ayudaP1: 'Create schedules and record results for any sport or competition. Scoring rules are configurable per discipline.',
+    ayudaP2: 'Tiebreakers include points, goal/point difference, goals/points for, head-to-head and disciplinary metrics when applicable.',
+    ayudaP3: 'The schedule generator creates round-robin matchups (single or double round). Use the playoffs section to build elimination brackets.',
     // dynamic texts & messages
     round: 'Round {n}',
     needAtLeast2TeamsGenerate: 'Add at least 2 teams to generate the schedule.',
@@ -991,6 +1321,46 @@ const translations = {
     generatingImage: 'Generating image...',
     imageError: 'Error generating image',
     goalsOf: 'Goals for {team}',
+    pointsOf: 'Points for {team}',
+    matchesOf: 'Matches for {team}',
+    setsOf: 'Sets for {team}',
+    thPTS: 'Points',
+    thDP: 'DP',
+    thSets: 'Sets',
+    thSetsLost: 'Sets-',
+    thSD: 'SD',
+    matchesDescGoals: 'Fill goals for each team. Standings recalc instantly.',
+    matchesDescPoints: 'Fill points for each team (e.g. basketball points). Standings recalc instantly.',
+    matchesDescMatches: 'Fill match results/rounds for each matchup. Standings recalc instantly.',
+    matchesDescSets: 'Fill sets won by each team. Standings recalc instantly.',
+    yellowCards: 'Yellow cards',
+    redCards: 'Red cards',
+    fouls: 'Fouls',
+    yellowCardsB: 'Yellow cards (B)',
+    redCardsB: 'Red cards (B)',
+    foulsB: 'Fouls (B)',
+    playoffsTitle: '4. Playoffs / Knockout',
+    generatePlayoffs: 'Generate playoff bracket',
+    selectPlayoffSize: 'Teams in playoffs',
+    playoffWinner: 'Winner',
+    playoffRound: 'Round',
+    playoffsEmpty: 'No playoffs generated.',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeNeon: 'Neon',
+    themeMinimal: 'Minimal',
+    pointsOf: 'Points for {team}',
+    matchesOf: 'Matches for {team}',
+    setsOf: 'Sets for {team}',
+    thPTS: 'Points',
+    thDP: 'DP',
+    thSets: 'Sets',
+    thSetsLost: 'Sets-',
+    thSD: 'SD',
+    matchesDescGoals: 'Fill goals for each team. Standings recalc instantly.',
+    matchesDescPoints: 'Fill points for each team (e.g. basketball points). Standings recalc instantly.',
+    matchesDescMatches: 'Fill match results/rounds for each matchup. Standings recalc instantly.',
+    matchesDescSets: 'Fill sets won by each team. Standings recalc instantly.',
     firebaseNotConfigured: 'Configure firebaseConfig in code before using cloud features.',
     cannotCopyLink: 'Could not copy link',
     viewerRemote: 'Remote viewer (Firebase not configured)',
@@ -1004,12 +1374,18 @@ const translations = {
     copied: 'Copied!',
     modalClose: 'Close',
     infoButtonAria: 'Sharing information',
-    footerParagraph: 'Marcador Liguilla is a free league points calculator, built for neighborhood tournaments, company leagues, amateur competitions and friend groups. Create schedules, record results from mobile and see the standings updated in real time — no spreadsheets, no signup.',
+    footerParagraph: 'Marcador Liguilla is a free tool to create, organize and share tournaments and leagues across sports and digital competitions.',
     footerCopyright: '© {year} Marcador Liguilla · Online football standings calculator',
     standingsEmpty: 'The table will appear here once you add teams.',
     vsLabel: 'vs',
     legendChampion: 'Champ.',
     legendRelegation: 'Releg.'
+    ,
+    sportFootball: 'Football (11 / Indoor / 7)',
+    sportBasketball: 'Basketball',
+    sportRacket: 'Padel / Tennis',
+    sportVolley: 'Volleyball',
+    sportEsports: 'E-Sports'
   }
 };
 
@@ -1069,6 +1445,10 @@ function applyTranslations(lang) {
   set('vs-label', t.vsLabel);
   set('legend-champion', t.legendChampion);
   set('legend-relegation', t.legendRelegation);
+  // playoffs
+  set('playoffs-h2', t.playoffsTitle);
+  const genBtn = document.getElementById('btn-generate-playoffs'); if (genBtn) genBtn.textContent = t.generatePlayoffs;
+  const playoffsEmptyEl = document.getElementById('playoffs-empty'); if (playoffsEmptyEl) playoffsEmptyEl.textContent = t.playoffsEmpty;
   // modal and info texts
   set('modal-info-title', t.infoTitle);
   const modalInfoBody = document.getElementById('modal-info-body'); if (modalInfoBody) modalInfoBody.innerHTML = t.infoBody;
@@ -1077,6 +1457,19 @@ function applyTranslations(lang) {
   const shareCopyBtn = document.getElementById('modal-share-copy'); if (shareCopyBtn) shareCopyBtn.textContent = t.copyLinkBtn;
   const shareCloseBtns = document.querySelectorAll('#modal-share-close, #modal-info-close'); shareCloseBtns.forEach(b => { if (b) b.textContent = t.modalClose; });
   const infoBtn = document.getElementById('btn-share-info'); if (infoBtn) { infoBtn.setAttribute('aria-label', t.infoButtonAria); infoBtn.title = t.infoButtonAria; }
+  // update sport picker labels
+  const sportEls = document.querySelectorAll('#sport-picker .sport-btn');
+  const emojiMap = { football: '⚽️', basketball: '🏀', racket: '🎾', volley: '🏐', esports: '🎮' };
+  sportEls.forEach(b => {
+    const key = b.dataset.sport;
+    let label = '';
+    if (key === 'football') label = t.sportFootball;
+    else if (key === 'basketball') label = t.sportBasketball;
+    else if (key === 'racket') label = t.sportRacket;
+    else if (key === 'volley') label = t.sportVolley;
+    else if (key === 'esports') label = t.sportEsports;
+    b.innerHTML = `${emojiMap[key] || ''} <span class="ml-1">${label}</span>`;
+  });
   // help texts
   const ayuda1 = document.getElementById('ayuda-p1'); if (ayuda1) ayuda1.innerHTML = t.ayudaP1;
   const ayuda2 = document.getElementById('ayuda-p2'); if (ayuda2) ayuda2.innerHTML = t.ayudaP2;
@@ -1122,6 +1515,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (esBtn) esBtn.addEventListener('click', () => setLanguage('es'));
   if (enBtn) enBtn.addEventListener('click', () => setLanguage('en'));
   setLanguage(lang);
+  // apply stored theme
+  try { const savedTheme = localStorage.getItem(THEME_KEY) || 'light'; applyTheme(savedTheme); } catch (e) { applyTheme('light'); }
 });
 
 /* ---------------------------------------------------
@@ -1151,6 +1546,9 @@ idaVueltaChk.checked = state.idaVuelta;
 renderTeams();
 renderMatches();
 renderStandings();
+renderPlayoffs();
+// initialize sport UI
+setSport(state.sport || 'football', false);
 </script>
 
 </body>

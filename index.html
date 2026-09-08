@@ -229,7 +229,24 @@
     <div id="playoff-bracket" class="space-y-4"></div>
   </section>
 
+  <!-- FAQ / Informational content for SEO -->
+  <section id="faq" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-6">
+    <!-- Filled by translations -->
+  </section>
+
   <!-- 1. EQUIPOS -->
+  <!-- AdSense top banner (hidden until consent) -->
+  <div id="ad-top" class="ad-slot my-4 text-center hidden-by-consent">
+    <!-- Replace data-ad-slot with your AdSense ad unit id -->
+    <ins class="adsbygoogle"
+      style="display:block"
+      data-ad-client="ca-pub-9379758602295375"
+      data-ad-slot="REPLACE_WITH_AD_SLOT_TOP"
+      data-ad-format="auto"
+      data-full-width-responsive="true"></ins>
+    <script>/* ads will be pushed after consent */</script>
+  </div>
+
   <section id="equipos" aria-labelledby="equipos-h2" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-5">
     <h2 id="equipos-h2" class="font-score text-xl text-pitch-900 mb-1">1. Equipos de tu liguilla</h2>
     <p class="text-sm text-ink-900/60 mb-4">Escribe un nombre y pulsa añadir. Necesitas al menos 2 equipos.</p>
@@ -326,6 +343,11 @@
       <button id="btn-export-image" class="rounded-lg bg-chalk-50 text-pitch-900 text-sm font-semibold px-3 py-2">Exportar como imagen</button>
       <button id="btn-share-link" class="rounded-lg bg-chalk-50 text-pitch-900 text-sm font-semibold px-3 py-2 hidden">Copiar enlace</button>
     </div>
+    <!-- AdSense bottom banner (hidden until consent) -->
+    <div id="ad-bottom" class="ad-slot mt-4 text-center hidden-by-consent">
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9379758602295375" data-ad-slot="REPLACE_WITH_AD_SLOT_BOTTOM" data-ad-format="auto"></ins>
+      <script>/* ads will be pushed after consent */</script>
+    </div>
   </section>
 
   <!-- 4. FAQ / Ayuda -->
@@ -345,8 +367,13 @@
     <p id="footer-paragraph" class="text-sm leading-relaxed">
       Marcador Liguilla es una calculadora de puntos de liga de fútbol gratuita, pensada para organizadores de liguillas de barrio, ligas de empresa, torneos amateur y competiciones entre amigos. Con este generador de clasificaciones puedes crear el calendario de partidos, registrar resultados desde el móvil y consultar la tabla de posiciones actualizada al momento, sin necesidad de hojas de cálculo ni registrarte.
     </p>
+    <p class="text-sm mt-4">
+      <a href="#" id="link-legal" class="underline mr-3">Aviso Legal</a>
+      <a href="#" id="link-privacy" class="underline mr-3">Política de Privacidad</a>
+      <a href="#" id="link-cookies" class="underline">Política de Cookies</a>
+    </p>
 
-    <p id="footer-copyright" class="text-xs text-chalk-100/40 mt-6">© <span id="year"></span> Marcador Liguilla · Calculadora de clasificación de fútbol online</p>
+    <p id="footer-copyright" class="text-xs text-chalk-100/40 mt-6">© <span id="year"></span> Marcador Liguilla · Herramienta de gestión de torneos</p>
   </div>
 </footer>
 
@@ -373,6 +400,35 @@
     </div>
   </div>
 </div>
+
+    <!-- LEGAL / PRIVACY / COOKIES MODALS -->
+    <div id="modal-legal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal" role="document">
+        <h3 id="modal-legal-title">Aviso Legal</h3>
+        <div id="modal-legal-body" class="modal-body"></div>
+        <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('modal-legal')">Cerrar</button></div>
+      </div>
+    </div>
+
+    <div id="modal-privacy" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal" role="document">
+        <h3 id="modal-privacy-title">Política de Privacidad</h3>
+        <div id="modal-privacy-body" class="modal-body"></div>
+        <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('modal-privacy')">Cerrar</button></div>
+      </div>
+    </div>
+
+    <div id="modal-cookies" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal" role="document">
+        <h3 id="modal-cookies-title">Política de Cookies</h3>
+        <div id="modal-cookies-body" class="modal-body"></div>
+        <div class="modal-actions">
+          <button id="cookie-accept-btn" class="btn-primary">Aceptar</button>
+          <button id="cookie-reject-btn" class="btn-secondary">Rechazar</button>
+          <button class="btn-secondary" onclick="closeModal('modal-cookies')">Cerrar</button>
+        </div>
+      </div>
+    </div>
 
 <script type="module">
 document.getElementById('year').textContent = new Date().getFullYear();
@@ -577,6 +633,32 @@ function closeModal(id) {
   el.setAttribute('aria-hidden', 'true');
 }
 
+// ---------------- COOKIE CONSENT / BANNER ----------------
+const COOKIE_KEY = 'liguilla_cookie_consent_v1';
+function getCookieConsent(){ try { return JSON.parse(localStorage.getItem(COOKIE_KEY)); } catch(e){return null;} }
+function setCookieConsent(obj){ try { localStorage.setItem(COOKIE_KEY, JSON.stringify(obj)); } catch(e){} }
+
+function renderCookieBanner(){
+  const consent = getCookieConsent();
+  const banner = document.getElementById('cookie-banner');
+  if (!banner) return;
+  if (!consent || consent.accepted === false) { banner.classList.remove('hidden'); } else { banner.classList.add('hidden'); applyConsent(consent); }
+}
+
+function applyConsent(consent){
+  // If ads accepted, reveal ad containers and push AdSense
+  const showAds = consent && consent.ads === true;
+  document.querySelectorAll('.hidden-by-consent').forEach(el => { if (showAds) el.classList.remove('hidden-by-consent'); else el.classList.add('hidden-by-consent'); });
+  if (showAds) pushAds();
+}
+
+function acceptAllCookies(){ const obj = { accepted:true, ads:true, analytics:true, timestamp:Date.now() }; setCookieConsent(obj); renderCookieBanner(); }
+function rejectAllCookies(){ const obj = { accepted:false, ads:false, analytics:false, timestamp:Date.now() }; setCookieConsent(obj); renderCookieBanner(); }
+
+// push AdSense ads (call after consent)
+function pushAds(){ try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) { /* ignore */ } }
+
+
 // Info button and modal controls
 const btnShareInfo = document.getElementById('btn-share-info');
 const modalInfoClose = document.getElementById('modal-info-close');
@@ -610,6 +692,16 @@ if (modalShareCopy) {
 
 // Close modals with Escape
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModal('modal-info'); closeModal('modal-share'); } });
+
+// wire footer legal links
+const linkLegal = document.getElementById('link-legal'); if (linkLegal) linkLegal.addEventListener('click', (e)=>{ e.preventDefault(); openModal('modal-legal'); });
+const linkPrivacy = document.getElementById('link-privacy'); if (linkPrivacy) linkPrivacy.addEventListener('click', (e)=>{ e.preventDefault(); openModal('modal-privacy'); });
+const linkCookies = document.getElementById('link-cookies'); if (linkCookies) linkCookies.addEventListener('click', (e)=>{ e.preventDefault(); openModal('modal-cookies'); });
+
+// cookie modal buttons
+const cookieAcceptBtn = document.getElementById('cookie-accept-btn'); if (cookieAcceptBtn) cookieAcceptBtn.addEventListener('click', ()=>{ acceptAllCookies(); closeModal('modal-cookies'); });
+const cookieRejectBtn = document.getElementById('cookie-reject-btn'); if (cookieRejectBtn) cookieRejectBtn.addEventListener('click', ()=>{ rejectAllCookies(); closeModal('modal-cookies'); });
+
 
 /* ---------------------------------------------------
    SELECTOR DE DEPORTE: lógica y terminología
@@ -1265,6 +1357,23 @@ const translations = {
     modalClose: 'Cerrar',
     infoButtonAria: 'Información sobre compartir',
     footerParagraph: 'Marcador Liguilla es una herramienta gratuita para crear, organizar y compartir torneos y liguillas multideporte. Ideal para eventos locales, eSports y competiciones informales.',
+    legalTitle: 'Aviso Legal',
+    legalBody: '<p>Aviso legal de Marcador Liguilla. Esta herramienta ofrece utilidades para crear y gestionar torneos y liguillas. El responsable no se hace cargo del uso indebido o la introducción incorrecta de datos.</p>',
+    privacyTitle: 'Política de Privacidad',
+    privacyBody: '<p>Almacenamos información mínima en localStorage para guardar el estado de tu liguilla. Opcionalmente usamos Firebase para sincronización en la nube. No vendemos datos personales. Google AdSense puede usar cookies para mostrar anuncios. Para verificación de servidor y App Check, siga las recomendaciones de Firebase.</p>',
+    cookiesTitle: 'Política de Cookies',
+    cookiesBody: '<p>Este sitio usa cookies y localStorage para recordar preferencias y proporcionar funcionalidades como sincronización en la nube y analítica. Google AdSense puede establecer cookies publicitarias. Puedes aceptar o rechazar las cookies de publicidad en la configuración.</p>',
+    cookieBannerText: 'Usamos cookies para mejorar la experiencia y mostrar anuncios relevantes. Acepta o configura tus preferencias.',
+    cookieAccept: 'Aceptar',
+    cookieReject: 'Rechazar',
+    cookieConfigure: 'Configurar',
+    faqTitle: 'Preguntas frecuentes y guía de uso',
+    faqQ1: '¿Cómo crear una liguilla?',
+    faqA1: '<p>Añade equipos en la sección 1, luego genera el calendario. Utiliza el generador automático o añade partidos manuales.</p>',
+    faqQ2: '¿Cómo funcionan las eliminatorias?',
+    faqA2: '<p>Tras generar la clasificación, ve a la sección de Eliminatorias para crear un cuadro y avanzar ganadores por ronda.</p>',
+    faqQ3: '¿Qué datos se guardan?',
+    faqA3: '<p>El estado de la liguilla (equipos, partidos, deporte seleccionado, temas y ajustes) se guarda en localStorage y opcionalmente en Firebase si usas la sincronización en la nube.</p>',
     footerCopyright: '© {year} Marcador Liguilla · Calculadora de clasificación de fútbol online',
     standingsEmpty: 'La tabla aparecerá aquí en cuanto añadas equipos.',
     vsLabel: 'vs',
@@ -1375,6 +1484,23 @@ const translations = {
     modalClose: 'Close',
     infoButtonAria: 'Sharing information',
     footerParagraph: 'Marcador Liguilla is a free tool to create, organize and share tournaments and leagues across sports and digital competitions.',
+    legalTitle: 'Legal Notice',
+    legalBody: '<p>General legal notice for Marcador Liguilla. This service provides tools to create and manage tournaments. The site owner is not responsible for misuse of the tool or incorrect data entry.</p>',
+    privacyTitle: 'Privacy Policy',
+    privacyBody: '<p>We collect minimal data in localStorage to save your tournament state. We may use Firebase for cloud sync. We do not sell personal data. Google AdSense may serve ads using cookies. For server-side verification and App Check, follow Firebase recommendations.</p>',
+    cookiesTitle: 'Cookie Policy',
+    cookiesBody: '<p>This site uses cookies and localStorage to remember your preferences and provide functionalities like cloud sync and analytics. Google AdSense may set cookies for advertising. You can accept or reject advertising cookies in the cookie settings.</p>',
+    cookieBannerText: 'Usamos cookies para mejorar la experiencia y mostrar anuncios relevantes. Acepta o configura tus preferencias.',
+    cookieAccept: 'Aceptar',
+    cookieReject: 'Rechazar',
+    cookieConfigure: 'Configurar',
+    faqTitle: 'FAQ & Guía de uso',
+    faqQ1: '¿Cómo crear una liguilla?',
+    faqA1: '<p>Añade equipos en la sección 1, luego genera el calendario. Utiliza el generador automático o añade partidos manuales.</p>',
+    faqQ2: '¿Cómo funcionan las eliminatorias?',
+    faqA2: '<p>Tras generar la clasificación, ve a la sección de Eliminatorias para crear un cuadro y avanzar ganadores por ronda.</p>',
+    faqQ3: '¿Qué datos se guardan?',
+    faqA3: '<p>El estado de la liguilla (equipos, partidos, deporte seleccionado, temas y ajustes) se guarda en localStorage y opcionalmente en Firebase si usas la sincronización en la nube.</p>',
     footerCopyright: '© {year} Marcador Liguilla · Online football standings calculator',
     standingsEmpty: 'The table will appear here once you add teams.',
     vsLabel: 'vs',
@@ -1455,6 +1581,18 @@ function applyTranslations(lang) {
   set('modal-share-title', t.shareModalTitle);
   const modalShareExplain = document.getElementById('modal-share-explain'); if (modalShareExplain) modalShareExplain.innerHTML = t.shareModalExplain;
   const shareCopyBtn = document.getElementById('modal-share-copy'); if (shareCopyBtn) shareCopyBtn.textContent = t.copyLinkBtn;
+  // legal/privacy/cookies modals
+  set('modal-legal-title', t.legalTitle || 'Aviso Legal');
+  const modalLegalBody = document.getElementById('modal-legal-body'); if (modalLegalBody) modalLegalBody.innerHTML = t.legalBody;
+  set('modal-privacy-title', t.privacyTitle || 'Política de Privacidad');
+  const modalPrivacyBody = document.getElementById('modal-privacy-body'); if (modalPrivacyBody) modalPrivacyBody.innerHTML = t.privacyBody;
+  set('modal-cookies-title', t.cookiesTitle || 'Política de Cookies');
+  const modalCookiesBody = document.getElementById('modal-cookies-body'); if (modalCookiesBody) modalCookiesBody.innerHTML = t.cookiesBody;
+  // cookie banner
+  const cookieBanner = document.getElementById('cookie-banner'); if (cookieBanner) cookieBanner.innerHTML = `<div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-4"><div class="flex-1 text-sm">${t.cookieBannerText}</div><div class="flex gap-2"><button id="banner-accept" class="btn-primary">${t.cookieAccept}</button><button id="banner-config" class="btn-secondary">${t.cookieConfigure}</button></div></div>`;
+  // wire banner buttons
+  const bannerAccept = document.getElementById('banner-accept'); if (bannerAccept) bannerAccept.addEventListener('click', ()=>{ acceptAllCookies(); });
+  const bannerConfig = document.getElementById('banner-config'); if (bannerConfig) bannerConfig.addEventListener('click', ()=>{ openModal('modal-cookies'); });
   const shareCloseBtns = document.querySelectorAll('#modal-share-close, #modal-info-close'); shareCloseBtns.forEach(b => { if (b) b.textContent = t.modalClose; });
   const infoBtn = document.getElementById('btn-share-info'); if (infoBtn) { infoBtn.setAttribute('aria-label', t.infoButtonAria); infoBtn.title = t.infoButtonAria; }
   // update sport picker labels
@@ -1474,6 +1612,8 @@ function applyTranslations(lang) {
   const ayuda1 = document.getElementById('ayuda-p1'); if (ayuda1) ayuda1.innerHTML = t.ayudaP1;
   const ayuda2 = document.getElementById('ayuda-p2'); if (ayuda2) ayuda2.innerHTML = t.ayudaP2;
   const ayuda3 = document.getElementById('ayuda-p3'); if (ayuda3) ayuda3.innerHTML = t.ayudaP3;
+  // FAQ section
+  const faqSection = document.getElementById('faq'); if (faqSection) faqSection.innerHTML = `<h3 class="font-score text-lg mb-2">${t.faqTitle}</h3><details class="mb-2"><summary class="font-semibold">${t.faqQ1}</summary><div class="pt-2 text-sm">${t.faqA1}</div></details><details class="mb-2"><summary class="font-semibold">${t.faqQ2}</summary><div class="pt-2 text-sm">${t.faqA2}</div></details><details class="mb-2"><summary class="font-semibold">${t.faqQ3}</summary><div class="pt-2 text-sm">${t.faqA3}</div></details>`;
   // footer
   const footerP = document.getElementById('footer-paragraph'); if (footerP) footerP.textContent = t.footerParagraph;
   const footerC = document.getElementById('footer-copyright'); if (footerC) footerC.textContent = tr('footerCopyright', { year: new Date().getFullYear() });

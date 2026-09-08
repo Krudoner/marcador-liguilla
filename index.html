@@ -223,7 +223,7 @@
     <button class="drawer-close" id="drawer-close" aria-label="Cerrar">✕</button>
     <h4 class="text-lg">Marcador Liguilla</h4>
     <div class="drawer-group">
-      <div class="text-sm text-white/90 mb-2">Deportes</div>
+        <div id="drawer-sports-title" class="text-sm text-white/90 mb-2">Deportes</div>
       <div id="drawer-sports">
         <button class="drawer-sport-btn sport-btn" data-sport="football">⚽️ <span>Fútbol</span></button>
         <button class="drawer-sport-btn sport-btn" data-sport="basketball">🏀 <span>Baloncesto</span></button>
@@ -232,10 +232,10 @@
       </div>
     </div>
     <div class="drawer-group">
-      <button id="drawer-info" class="btn-secondary w-full text-left">ℹ️ Información</button>
+      <button id="drawer-info" class="btn-secondary w-full text-left">ℹ️ <span id="drawer-info-text">Información</span></button>
     </div>
     <div class="drawer-group">
-      <div class="text-sm text-white/90 mb-2">Idioma</div>
+      <div id="drawer-lang-title" class="text-sm text-white/90 mb-2">Idioma</div>
       <div class="inline-flex gap-2">
         <button id="drawer-lang-es" class="lang-btn">ES</button>
         <button id="drawer-lang-en" class="lang-btn">EN</button>
@@ -1587,6 +1587,28 @@ const translations = {
     cookieAccept: 'Aceptar',
     cookieReject: 'Rechazar',
     cookieConfigure: 'Configurar',
+    settingPtsVictory: 'Points for a win',
+    settingPtsDraw: 'Points for a draw',
+    settingFormat: 'Format',
+    settingGamesPerSet: 'Games per set',
+    settingSuperTiebreak: 'Use super tie-break in final set',
+    settingSetsMatch: 'Sets per match',
+    settingPointsPerSet: 'Points per set',
+    settingFinalSetPoints: 'Final set points (tie-break)',
+    drawerSportsTitle: 'Sports',
+    drawerInfo: 'Information',
+    drawerLanguage: 'Language',
+    settingPtsVictory: 'Puntos por victoria',
+    settingPtsDraw: 'Puntos por empate',
+    settingFormat: 'Formato',
+    settingGamesPerSet: 'Juegos por set',
+    settingSuperTiebreak: 'Usar super tie-break en el último set',
+    settingSetsMatch: 'Sets por partido',
+    settingPointsPerSet: 'Puntos por set',
+    settingFinalSetPoints: 'Puntos último set (tie-break)',
+    drawerSportsTitle: 'Deportes',
+    drawerInfo: 'Información',
+    drawerLanguage: 'Idioma',
     faqTitle: 'Preguntas frecuentes y guía de uso',
     faqQ1: '¿Cómo crear una liguilla?',
     faqA1: '<p>Añade equipos en la sección 1, luego genera el calendario. Utiliza el generador automático o añade partidos manuales.</p>',
@@ -1837,6 +1859,10 @@ function applyTranslations(lang) {
   // footer
   const footerP = document.getElementById('footer-paragraph'); if (footerP) footerP.textContent = t.footerParagraph;
   const footerC = document.getElementById('footer-copyright'); if (footerC) footerC.textContent = tr('footerCopyright', { year: new Date().getFullYear() });
+  // drawer translations
+  const drawerSportsTitle = document.getElementById('drawer-sports-title'); if (drawerSportsTitle) drawerSportsTitle.textContent = t.drawerSportsTitle || 'Deportes';
+  const drawerInfoText = document.getElementById('drawer-info-text'); if (drawerInfoText) drawerInfoText.textContent = t.drawerInfo || 'Información';
+  const drawerLangTitle = document.getElementById('drawer-lang-title'); if (drawerLangTitle) drawerLangTitle.textContent = t.drawerLanguage || 'Idioma';
   // small header subtitle etc
 }
 

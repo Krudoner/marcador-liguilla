@@ -109,6 +109,14 @@
   .modal .readonly-input { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; background:#f8fafc; font-family:monospace; }
   .btn-primary { background:#E3B23C; color:#07211a; padding:8px 12px; border-radius:8px; font-weight:700; border:none; cursor:pointer; }
   .btn-secondary { background:transparent; color:#07211a; padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; cursor:pointer; }
+  /* Sport picker and language buttons styling */
+  .sport-btn { display:inline-flex; align-items:center; gap:8px; min-width:64px; padding:6px 8px; font-size:11px; border-radius:8px; }
+  .sport-btn span { white-space:nowrap; }
+  .lang-btn { font-size:11px; padding:6px 8px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; transition: all 200ms ease; }
+  .lang-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(11,22,16,0.06); }
+  .lang-active { background: var(--gold) !important; color: var(--text) !important; font-weight:700 !important; box-shadow: 0 6px 18px rgba(11,22,16,0.08); border: 1px solid rgba(0,0,0,0.06); }
+  .lang-inactive { opacity: 0.7; background: transparent !important; color: rgba(255,255,255,0.95); }
+  .lang-icon { font-size:14px; opacity:0.95; }
 </style>
 
 <!-- html2canvas -->
@@ -193,8 +201,11 @@
           <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="neon" title="Neón">✨</button>
           <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="minimal" title="Minimal">⚪</button>
         </div>
-        <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
-        <button id="lang-en" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">EN</button>
+        <div class="language-picker inline-flex items-center gap-2">
+          <span class="lang-icon" aria-hidden="true" title="Language selector">🌐</span>
+          <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
+          <button id="lang-en" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">EN</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1628,17 +1639,19 @@ function setLanguage(lang) {
   try { renderMatches(); } catch (e) {}
   // update active class on buttons
   const es = document.getElementById('lang-es'), en = document.getElementById('lang-en');
+  if (es) es.classList.add('lang-btn');
+  if (en) en.classList.add('lang-btn');
   if (es && en) {
-    const activeClass = ['bg-gold-400','text-pitch-900','font-bold','border-transparent'];
-    const inactiveClass = ['bg-white/5','text-chalk-100/90','border-white/10'];
     const apply = (el, isActive) => {
       if (!el) return;
       if (isActive) {
-        el.classList.remove(...inactiveClass);
-        el.classList.add(...activeClass);
+        el.classList.remove('lang-inactive');
+        el.classList.add('lang-active');
+        el.setAttribute('aria-pressed', 'true');
       } else {
-        el.classList.remove(...activeClass);
-        el.classList.add(...inactiveClass);
+        el.classList.remove('lang-active');
+        el.classList.add('lang-inactive');
+        el.setAttribute('aria-pressed', 'false');
       }
     };
     apply(es, lang === 'es');

@@ -183,23 +183,16 @@
       <p id="site-name" class="font-score text-chalk-50 text-lg leading-tight tracking-wide">MARCADOR LIGUILLA</p>
       <p id="site-sub" class="text-chalk-100/70 text-xs leading-tight">Clasificación en vivo, sin registro</p>
     </div>
-    <div class="ml-auto flex items-center gap-2">
+    <div class="ml-auto flex items-center gap-3">
       <button id="btn-share-cloud" class="rounded-md bg-gold-500 hover:bg-gold-400 text-pitch-900 text-xs font-semibold px-3 py-1">Guardar y compartir liga</button>
       <button id="btn-share-info" aria-label="Info" title="Info" class="ml-2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-chalk-50 text-xs font-semibold flex items-center justify-center">i</button>
-      <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2"></span>
-      <div class="ml-2 inline-flex items-center gap-1">
-        <div id="sport-picker" class="inline-flex items-center gap-2 mr-2">
+      <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2 hidden sm:inline"></span>
+      <div class="ml-2 inline-flex items-center gap-2">
+        <div id="sport-picker" class="inline-flex items-center gap-2 mr-2 overflow-x-auto whitespace-nowrap" style="-webkit-overflow-scrolling:touch;">
           <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Basket</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Volei</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="esports" title="E-Sports">🎮 <span class="ml-1">E-Sports</span></button>
-        </div>
-        <div id="theme-picker" class="inline-flex items-center gap-2">
-          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="light" title="Claro">🌤️</button>
-          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="dark" title="Oscuro">🌙</button>
-          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="neon" title="Neón">✨</button>
-          <button class="theme-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5" data-theme="minimal" title="Minimal">⚪</button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Baloncesto</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel/Tenis</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Voleibol</span></button>
         </div>
         <div class="language-picker inline-flex items-center gap-2">
           <span class="lang-icon" aria-hidden="true" title="Language selector">🌐</span>
@@ -745,9 +738,10 @@ function applySportTerminology() {
     setText('th-gc', tr('thOPP') || 'Opp');
     setText('th-dg', tr('thDP') || 'DP');
   } else if (sport === 'racket' || sport === 'volley') {
-    setText('th-gf', tr('thSets') || 'Sets');
-    setText('th-gc', tr('thSetsLost') || 'Sets-');
-    setText('th-dg', tr('thSD') || 'SD');
+    // show Sets Won / Sets Lost / Diff
+    setText('th-gf', 'SG');
+    setText('th-gc', 'SP');
+    setText('th-dg', 'DS');
   }
 
   // update paragraph that mentions goals/points in the UI description
@@ -883,7 +877,7 @@ function generarCalendario() {
   let id = 1;
   jornadas.forEach((pares, idx) => {
     pares.forEach(([a, b]) => {
-      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null, ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
+      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null, setsA: [null,null,null,null,null], setsB: [null,null,null,null,null], ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
     });
   });
 
@@ -891,7 +885,7 @@ function generarCalendario() {
     const totalIda = jornadas.length;
     jornadas.forEach((pares, idx) => {
       pares.forEach(([a, b]) => {
-        nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null, ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
+        nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null, setsA: [null,null,null,null,null], setsB: [null,null,null,null,null], ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
       });
     });
   }
@@ -915,11 +909,7 @@ btnConfirmManual.addEventListener('click', () => {
   const a = manualTeamA.value, b = manualTeamB.value;
   if (!a || !b || a === b) { alert(tr('chooseDifferentTeams')); return; }
   const maxJornada = state.matches.reduce((m, x) => Math.max(m, x.jornada), 0);
-  state.matches.push({ id: Date.now(), jornada: maxJornada + 1, a, b, sa: null, sb: null });
-  // add stats fields
-  state.matches[state.matches.length-1].ya = null; state.matches[state.matches.length-1].yb = null;
-  state.matches[state.matches.length-1].ra = null; state.matches[state.matches.length-1].rb = null;
-  state.matches[state.matches.length-1].fa = null; state.matches[state.matches.length-1].fb = null;
+  state.matches.push({ id: Date.now(), jornada: maxJornada + 1, a, b, sa: null, sb: null, setsA: [null,null,null,null,null], setsB: [null,null,null,null,null], ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
   saveState();
   manualForm.classList.add('hidden');
   renderMatches();
@@ -955,17 +945,42 @@ function renderMatches() {
     state.matches.filter(m => m.jornada === j).forEach(m => {
       const row = document.createElement('div');
       row.className = 'flex items-center gap-2 bg-chalk-50 rounded-lg px-3 py-2';
+      const sport = state.sport || 'football';
       const labelA = getScoreLabel(m.a);
       const labelB = getScoreLabel(m.b);
+      let middleHtml = '';
+      if (sport === 'racket' || sport === 'volley') {
+        // render up to 5 set inputs per side
+        const setsCount = 5;
+        const setInputs = [];
+        for (let si = 0; si < setsCount; si++) {
+          const vala = (m.setsA && m.setsA[si] != null) ? m.setsA[si] : '';
+          const valb = (m.setsB && m.setsB[si] != null) ? m.setsB[si] : '';
+          setInputs.push(`
+            <div class="inline-flex items-center gap-1">
+              <input type="number" min="0" max="99" inputmode="numeric" aria-label="${labelA} set ${si+1}"
+                class="set-input w-10 text-center rounded-md border border-ink-900/20 py-1 text-sm font-score font-semibold" value="${vala}" data-id="${m.id}" data-side="a" data-set-index="${si}">
+              <span class="text-ink-900/30 text-xs">/</span>
+              <input type="number" min="0" max="99" inputmode="numeric" aria-label="${labelB} set ${si+1}"
+                class="set-input w-10 text-center rounded-md border border-ink-900/20 py-1 text-sm font-score font-semibold" value="${valb}" data-id="${m.id}" data-side="b" data-set-index="${si}">
+            </div>`);
+        }
+        middleHtml = `<div class="flex items-center gap-2">${setInputs.join('')}</div>`;
+      } else {
+        middleHtml = `
+          <input type="number" min="0" max="999" inputmode="numeric" aria-label="${labelA}"
+            class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
+            value="${m.sa ?? ''}" data-id="${m.id}" data-side="sa">
+          <span class="text-ink-900/30 text-xs">–</span>
+          <input type="number" min="0" max="999" inputmode="numeric" aria-label="${labelB}"
+            class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
+            value="${m.sb ?? ''}" data-id="${m.id}" data-side="sb">
+        `;
+      }
+
       row.innerHTML = `
         <span class="flex-1 text-sm font-medium text-right truncate">${escapeHtml(m.a)}</span>
-        <input type="number" min="0" max="999" inputmode="numeric" aria-label="${labelA}"
-          class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
-          value="${m.sa ?? ''}" data-id="${m.id}" data-side="sa">
-        <span class="text-ink-900/30 text-xs">–</span>
-        <input type="number" min="0" max="999" inputmode="numeric" aria-label="${labelB}"
-          class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
-          value="${m.sb ?? ''}" data-id="${m.id}" data-side="sb">
+        <div class="mx-2">${middleHtml}</div>
         <span class="flex-1 text-sm font-medium truncate">${escapeHtml(m.b)}</span>
         <button type="button" class="stats-toggle shrink-0 ml-2 text-ink-900/40 hover:text-ink-900 text-xs w-7 h-7 flex items-center justify-center" data-id="${m.id}" aria-expanded="false">⚙</button>
         <button type="button" aria-label="Eliminar partido" data-id="${m.id}"
@@ -988,6 +1003,7 @@ function renderMatches() {
   matchListEl.querySelectorAll('.score-input').forEach(inp => {
     inp.addEventListener('input', onScoreChange);
   });
+  matchListEl.querySelectorAll('.set-input').forEach(inp => { inp.addEventListener('input', onSetChange); });
   matchListEl.querySelectorAll('.stat-input').forEach(inp => {
     inp.addEventListener('input', onStatChange);
   });
@@ -1017,6 +1033,30 @@ function onScoreChange(e) {
   renderStandings();
 }
 
+function onSetChange(e) {
+  const id = Number(e.target.dataset.id);
+  const side = e.target.dataset.side; // 'a' or 'b'
+  const idx = Number(e.target.dataset.setIndex);
+  const raw = e.target.value;
+  const match = state.matches.find(m => m.id === id);
+  if (!match) return;
+  if (!match.setsA) match.setsA = [null,null,null,null,null];
+  if (!match.setsB) match.setsB = [null,null,null,null,null];
+  if (side === 'a') match.setsA[idx] = raw === '' ? null : Math.max(0, Math.min(99, Number(raw)));
+  else match.setsB[idx] = raw === '' ? null : Math.max(0, Math.min(99, Number(raw)));
+  // compute set wins
+  computeSetsTotals(match);
+  saveState();
+  renderStandings();
+}
+
+function computeSetsTotals(match) {
+  if (!match) return;
+  const sa = (match.setsA || []).reduce((acc, v, i) => { if (v == null || match.setsB == null) return acc; const vb = match.setsB[i]; if (vb == null) return acc; if (v > vb) return acc + 1; return acc; }, 0);
+  const sb = (match.setsB || []).reduce((acc, v, i) => { if (v == null || match.setsA == null) return acc; const va = match.setsA[i]; if (va == null) return acc; if (v > va) return acc + 1; return acc; }, 0);
+  match.sa = sa; match.sb = sb;
+}
+
 function onStatChange(e) {
   const id = Number(e.target.dataset.id);
   const stat = e.target.dataset.stat;
@@ -1034,26 +1074,40 @@ function onStatChange(e) {
 function calcularClasificacion() {
   const tabla = {};
   state.teams.forEach(t => {
-    tabla[t] = { equipo: t, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0, ya:0, ra:0, fa:0 };
+    tabla[t] = { equipo: t, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0, ya:0, ra:0, fa:0, sg:0, sp:0, ds:0 };
   });
 
   state.matches.forEach(m => {
-    if (m.sa === null || m.sb === null || !tabla[m.a] || !tabla[m.b]) return;
+    if ((!tabla[m.a] || !tabla[m.b])) return;
     const A = tabla[m.a], B = tabla[m.b];
-    A.pj++; B.pj++;
-    A.gf += m.sa; A.gc += m.sb;
-    B.gf += m.sb; B.gc += m.sa;
+    // require scores depending on sport
+    const sport = state.sport || 'football';
+    if (sport === 'racket' || sport === 'volley') {
+      // sets-based: ensure sa/sb computed
+      if (m.sa === null || m.sb === null) return;
+      A.pj++; B.pj++;
+      A.sg += Number(m.sa || 0); A.sp += Number(m.sb || 0);
+      B.sg += Number(m.sb || 0); B.sp += Number(m.sa || 0);
+      A.ds = A.sg - A.sp; B.ds = B.sg - B.sp;
+      if (m.sa > m.sb) { A.pg++; A.pts += Number(state.ptsVictoria || 0); B.pp++; }
+      else if (m.sa < m.sb) { B.pg++; B.pts += Number(state.ptsVictoria || 0); A.pp++; }
+      else { A.pe++; B.pe++; A.pts += Number(state.ptsEmpate || 0); B.pts += Number(state.ptsEmpate || 0); }
+    } else {
+      if (m.sa === null || m.sb === null) return;
+      A.pj++; B.pj++;
+      A.gf += Number(m.sa || 0); A.gc += Number(m.sb || 0);
+      B.gf += Number(m.sb || 0); B.gc += Number(m.sa || 0);
+      if (m.sa > m.sb) { A.pg++; A.pts += Number(state.ptsVictoria || 0); B.pp++; }
+      else if (m.sa < m.sb) { B.pg++; B.pts += Number(state.ptsVictoria || 0); A.pp++; }
+      else { A.pe++; B.pe++; A.pts += Number(state.ptsEmpate || 0); B.pts += Number(state.ptsEmpate || 0); }
+      A.dg = A.gf - A.gc; B.dg = B.gf - B.gc;
+    }
     // disciplinary and fouls
     A.ya += Number(m.ya || 0); B.ya += Number(m.yb || 0);
     A.ra += Number(m.ra || 0); B.ra += Number(m.rb || 0);
     A.fa += Number(m.fa || 0); B.fa += Number(m.fb || 0);
-
-    if (m.sa > m.sb) { A.pg++; A.pts += Number(state.ptsVictoria || 0); B.pp++; }
-    else if (m.sa < m.sb) { B.pg++; B.pts += Number(state.ptsVictoria || 0); A.pp++; }
-    else { A.pe++; B.pe++; A.pts += Number(state.ptsEmpate || 0); B.pts += Number(state.ptsEmpate || 0); }
   });
 
-  Object.values(tabla).forEach(t => { t.dg = t.gf - t.gc; });
   const list = Object.values(tabla);
   // helper: head-to-head points among two teams
   function headToHeadPoints(teamA, teamB) {
@@ -1108,9 +1162,15 @@ function renderStandings() {
       <td class="py-2 px-2 text-center">${t.pg}</td>
       <td class="py-2 px-2 text-center">${t.pe}</td>
       <td class="py-2 px-2 text-center">${t.pp}</td>
-      <td class="py-2 px-2 text-center">${t.gf}</td>
-      <td class="py-2 px-2 text-center">${t.gc}</td>
-      <td class="py-2 px-2 text-center">${t.dg > 0 ? '+' + t.dg : t.dg}</td>
+      ${ state.sport === 'racket' || state.sport === 'volley' ? `
+        <td class="py-2 px-2 text-center">${t.sg}</td>
+        <td class="py-2 px-2 text-center">${t.sp}</td>
+        <td class="py-2 px-2 text-center">${t.ds > 0 ? '+' + t.ds : t.ds}</td>
+      ` : `
+        <td class="py-2 px-2 text-center">${t.gf}</td>
+        <td class="py-2 px-2 text-center">${t.gc}</td>
+        <td class="py-2 px-2 text-center">${t.dg > 0 ? '+' + t.dg : t.dg}</td>
+      ` }
       <td class="py-2 pr-3 pl-2 text-right font-score font-bold text-gold-400">${t.pts}</td>
     `;
     standingsBody.appendChild(tr);

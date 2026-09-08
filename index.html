@@ -183,10 +183,10 @@
 
 <!-- HEADER -->
 <header class="sticky top-0 z-30 bg-pitch-900 border-b-4 border-gold-400 shadow-md">
-  <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+  <div class="max-w-5xl mx-auto px-4 py-2 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
     <!-- Left: logo + title -->
     <div class="flex items-center gap-3">
-      <svg role="img" aria-label="Balón de fútbol" width="36" height="36" viewBox="0 0 100 100" class="shrink-0">
+      <svg role="img" aria-label="Balón de fútbol" width="36" height="36" viewBox="0 0 100 100" class="w-8 h-8 lg:w-9 lg:h-9 shrink-0">
         <circle cx="50" cy="50" r="46" fill="#F7F6F0" stroke="#E3B23C" stroke-width="4"/>
         <polygon points="50,28 65,39 59,57 41,57 35,39" fill="#0F3D2E"/>
       </svg>
@@ -197,25 +197,25 @@
     </div>
 
     <!-- Center: sport picker (visible on large screens) -->
-    <div class="hidden lg:flex flex-1 justify-center">
-      <div id="sport-picker" class="inline-flex items-center gap-2 overflow-x-auto whitespace-nowrap" style="-webkit-overflow-scrolling:touch;">
-        <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
-        <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Baloncesto</span></button>
-        <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel/Tenis</span></button>
-        <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Voleibol</span></button>
+      <div class="hidden lg:flex flex-1 justify-center">
+        <div id="sport-picker" class="inline-flex items-center gap-2 overflow-x-auto whitespace-nowrap" style="-webkit-overflow-scrolling:touch;">
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Baloncesto</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel/Tenis</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Voleibol</span></button>
+        </div>
       </div>
-    </div>
 
     <!-- Right: actions + language + hamburger for mobile -->
     <div class="flex items-center gap-3 ml-auto">
-      <button id="btn-share-cloud" class="rounded-md bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-semibold px-3 py-1">Guardar y compartir liga</button>
+      <button id="btn-share-cloud" class="rounded-md bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-semibold px-3 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors">Guardar y compartir liga</button>
       <button id="btn-share-info" aria-label="Info" title="Info" class="ml-2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-chalk-50 text-xs font-semibold flex items-center justify-center">i</button>
       <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2 hidden lg:inline"></span>
       <div class="ml-2 inline-flex items-center gap-2">
         <div class="language-picker inline-flex items-center gap-2">
           <span class="lang-icon" aria-hidden="true" title="Language selector">🌐</span>
-          <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
-          <button id="lang-en" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">EN</button>
+          <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors">ES</button>
+          <button id="lang-en" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors">EN</button>
         </div>
         <!-- hamburger visible only on small screens -->
         <button id="btn-hamburger" class="lg:hidden ml-1 p-2 rounded-md bg-transparent text-chalk-50 hover:bg-white/10" aria-label="Abrir menú" title="Menú">
@@ -234,10 +234,10 @@
     <div class="drawer-group">
         <div id="drawer-sports-title" class="text-sm text-white/90 mb-2">Deportes</div>
       <div id="drawer-sports">
-        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="football">⚽️ <span>Fútbol</span></button>
-        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="basketball">🏀 <span>Baloncesto</span></button>
-        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="racket">🎾 <span>Pádel/Tenis</span></button>
-        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="volley">🏐 <span>Voleibol</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transition-colors" data-sport="football">⚽️ <span>Fútbol</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transition-colors" data-sport="basketball">🏀 <span>Baloncesto</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transition-colors" data-sport="racket">🎾 <span>Pádel/Tenis</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transition-colors" data-sport="volley">🏐 <span>Voleibol</span></button>
       </div>
     </div>
     <div class="drawer-group">

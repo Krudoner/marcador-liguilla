@@ -1,0 +1,45 @@
+/* Custom utility fallbacks and helper classes
+   These classes complement Tailwind-generated utilities and act as
+   safe fallbacks in case a Purge/Content step removes custom names.
+   Recommended: add these class names to your Tailwind `safelist` in tailwind.config.js
+   so the build keeps them. */
+
+/* Color tokens used across the app */
+:root{
+  --pitch-900: #0F3D2E;
+  --gold-400: #E3B23C;
+  --gold-500: #D9A933;
+  --card-600: #234c3a;
+  --chalk-50: #f8fafc;
+  --ink-900: #07211a;
+  --pitch-700: #145a43;
+}
+
+/* Backgrounds */
+.bg-pitch-900{ background-color: var(--pitch-900) !important; }
+.bg-card-600{ background-color: var(--card-600) !important; }
+.bg-gold-500{ background-color: var(--gold-500) !important; }
+.bg-gold-400{ background-color: var(--gold-400) !important; }
+.bg-chalk-50{ background-color: var(--chalk-50) !important; }
+
+/* Text colors */
+.text-gold-400{ color: var(--gold-400) !important; }
+.text-pitch-900{ color: var(--pitch-900) !important; }
+.text-chalk-50{ color: #F7F6F0 !important; }
+.text-ink-900{ color: var(--ink-900) !important; }
+
+/* Borders */
+.border-pitch-900{ border-color: var(--pitch-900) !important; }
+.border-gold-400{ border-color: var(--gold-400) !important; }
+
+/* Utility fallback classes used by app JS */
+.pointer-events-none{ pointer-events: none !important; }
+.opacity-50{ opacity: 0.5 !important; }
+
+/* Small helpers for modal visuals */
+.modal { box-sizing: border-box; }
+
+/* Ensure inputs and small controls look ok if Tailwind misses them */
+.score-input, .stat-input, .playoff-score{ font-family: inherit; border-radius: 6px; border: 1px solid #e5e7eb; }
+
+/* End of file */

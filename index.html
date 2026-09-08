@@ -135,7 +135,12 @@
     try { getAnalytics(app); } catch(e) { /* ignore analytics errors */ }
     const db = getFirestore(app);
     window._fb = { app, db, doc, getDoc, setDoc, onSnapshot, serverTimestamp };
-    // App Check (reCAPTCHA v3) - replace RECAPTCHA_SITE_KEY with your site key
+    // App Check (reCAPTCHA v3)
+    // IMPORTANT: Before enabling App Check in production, verify that this SITE KEY
+    // is correctly registered and linked in the Firebase Console (App Check -> Register)
+    // and that your backend verification (if any) accepts App Check tokens. Do NOT
+    // commit server-side secrets to the frontend. Only the SITE KEY is public.
+    // Replace RECAPTCHA_SITE_KEY below with your site key from Google/Firebase.
     const RECAPTCHA_SITE_KEY = '6LfG27AtAAAAALVUhtCKfz8cTZjH-8aBIhdBZjGP';
     if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== 'REPLACE_WITH_RECAPTCHA_V3_SITE_KEY') {
       try {
@@ -153,10 +158,9 @@
     console.warn('No se pudo inicializar Firebase modular', e);
   }
 </script>
-</head>
-
-<!-- Google AdSense -->
+<!-- Google AdSense (moved inside <head> for correct placement) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9379758602295375" crossorigin="anonymous"></script>
+</head>
 
 <body class="text-ink-900 antialiased">
 

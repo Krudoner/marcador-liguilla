@@ -198,10 +198,10 @@
       <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2 hidden sm:inline"></span>
       <div class="ml-2 inline-flex items-center gap-2">
         <div id="sport-picker" class="hidden sm:inline-flex items-center gap-2 mr-2 overflow-x-auto whitespace-nowrap" style="-webkit-overflow-scrolling:touch;">
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Baloncesto</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel/Tenis</span></button>
-          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Voleibol</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Baloncesto</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel/Tenis</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/20 bg-transparent text-slate-300 hover:bg-white/10" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Voleibol</span></button>
         </div>
         <!-- hamburger visible on small screens -->
         <button id="btn-hamburger" class="sm:hidden ml-1 p-2 rounded-md bg-transparent text-chalk-50 hover:bg-white/10" aria-label="Abrir menú" title="Menú">
@@ -225,10 +225,10 @@
     <div class="drawer-group">
         <div id="drawer-sports-title" class="text-sm text-white/90 mb-2">Deportes</div>
       <div id="drawer-sports">
-        <button class="drawer-sport-btn sport-btn" data-sport="football">⚽️ <span>Fútbol</span></button>
-        <button class="drawer-sport-btn sport-btn" data-sport="basketball">🏀 <span>Baloncesto</span></button>
-        <button class="drawer-sport-btn sport-btn" data-sport="racket">🎾 <span>Pádel/Tenis</span></button>
-        <button class="drawer-sport-btn sport-btn" data-sport="volley">🏐 <span>Voleibol</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="football">⚽️ <span>Fútbol</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="basketball">🏀 <span>Baloncesto</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="racket">🎾 <span>Pádel/Tenis</span></button>
+        <button class="drawer-sport-btn sport-btn border border-white/10 bg-transparent text-slate-300 hover:bg-white/10" data-sport="volley">🏐 <span>Voleibol</span></button>
       </div>
     </div>
     <div class="drawer-group">
@@ -766,7 +766,28 @@ function setSport(sportKey, save = true) {
   renderMatches(); renderStandings();
   if (save) saveState();
   // update active sport button visuals
-  sportButtons.forEach(btn => { btn.classList.remove('bg-gold-400','text-pitch-900','font-bold'); if (btn.dataset.sport === state.sport) btn.classList.add('bg-gold-400','text-pitch-900','font-bold'); });
+  sportButtons.forEach(btn => {
+    // remove active classes
+    btn.classList.remove('bg-amber-500','text-slate-900','font-bold');
+    // ensure inactive baseline
+    btn.classList.remove('text-chalk-100','bg-white/5');
+    btn.classList.add('bg-transparent','text-slate-300','border','border-white/20');
+    // apply active classes to selected
+    if (btn.dataset.sport === state.sport) {
+      btn.classList.remove('bg-transparent','text-slate-300','border','border-white/20');
+      btn.classList.add('bg-amber-500','text-slate-900','font-bold');
+    }
+  });
+  // also update drawer buttons (same classes)
+  const drawerBtns = document.querySelectorAll('#drawer-sports .sport-btn');
+  drawerBtns.forEach(btn => {
+    btn.classList.remove('bg-amber-500','text-slate-900','font-bold');
+    btn.classList.add('bg-transparent','text-slate-300');
+    if (btn.dataset.sport === state.sport) {
+      btn.classList.remove('bg-transparent','text-slate-300');
+      btn.classList.add('bg-amber-500','text-slate-900','font-bold');
+    }
+  });
 }
 
 function applySportTerminology() {

@@ -256,22 +256,7 @@
     </p>
   </section>
 
-  <!-- 4. PLAYOFFS / ELIMINATORIAS -->
-  <section id="playoffs" aria-labelledby="playoffs-h2" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-5">
-    <div class="flex items-center justify-between mb-2">
-      <h2 id="playoffs-h2" class="font-score text-xl text-pitch-900"></h2>
-      <div class="flex items-center gap-2">
-        <label class="text-sm"> <select id="playoff-size" class="rounded-lg border border-ink-900/15 px-2 py-1 text-sm">
-          <option value="4">4</option>
-          <option value="8">8</option>
-          <option value="16">16</option>
-        </select> </label>
-        <button id="btn-generate-playoffs" class="rounded-lg bg-gold-500 hover:bg-gold-400 text-pitch-900 text-sm font-bold px-3 py-2">Generar eliminatorias</button>
-      </div>
-    </div>
-    <p id="playoffs-empty" class="text-sm text-ink-900/60 mb-4"></p>
-    <div id="playoff-bracket" class="space-y-4"></div>
-  </section>
+
 
   <!-- FAQ / Informational content for SEO -->
   <section id="faq" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-6">
@@ -310,14 +295,9 @@
 
     <details class="mt-5 border-t border-ink-900/10 pt-4">
       <summary class="cursor-pointer text-sm font-semibold text-pitch-700">Ajustes de puntuación y calendario</summary>
+      <div id="sport-settings" class="mt-4 text-sm"></div>
+
       <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-        <label class="flex flex-col gap-1">
-          Puntos por victoria
-          <select id="pts-victoria" class="rounded-lg border border-ink-900/15 px-2 py-2">
-            <option value="3">3 puntos</option>
-            <option value="2">2 puntos</option>
-          </select>
-        </label>
         <label class="flex flex-col gap-1">
           <span id="label-zona-descenso">Zona de descenso (últimos)</span>
           <input id="zona-descenso" type="number" min="0" max="10" value="1" class="rounded-lg border border-ink-900/15 px-2 py-2">
@@ -327,10 +307,27 @@
           Calendario a ida y vuelta
         </label>
       </div>
+
       <button id="btn-generar" type="button"
         class="mt-4 w-full rounded-lg bg-gold-500 hover:bg-gold-400 active:scale-[.98] transition-colors text-pitch-900 text-sm font-bold py-2.5">
         Generar calendario automático
       </button>
+
+      <div class="mt-4 pt-4 border-t border-ink-900/10">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-score text-sm text-pitch-900">Eliminatorias / Playoffs</h3>
+          <div class="flex items-center gap-2">
+            <label class="text-sm"> <select id="playoff-size" class="rounded-lg border border-ink-900/15 px-2 py-1 text-sm">
+              <option value="4">4</option>
+              <option value="8">8</option>
+              <option value="16">16</option>
+            </select> </label>
+            <button id="btn-generate-playoffs" class="rounded-lg bg-gold-500 hover:bg-gold-400 text-pitch-900 text-sm font-bold px-3 py-2">Generar eliminatorias</button>
+          </div>
+        </div>
+        <p id="playoffs-empty" class="text-sm text-ink-900/60 mb-4"></p>
+        <div id="playoff-bracket" class="space-y-4"></div>
+      </div>
     </details>
   </section>
 
@@ -489,7 +486,13 @@ let state = {
   ptsEmpate: 1,
   sport: 'football',
   zonaDescenso: 1,
-  idaVuelta: false
+  idaVuelta: false,
+  sportConfig: {
+    football: { ptsVictoria: 3, ptsEmpate: 1 },
+    basketball: { ptsVictoria: 2, ptsEmpate: 0 },
+    racket: { bestOf: 3, gamesPerSet: 6, superTiebreak: false },
+    volley: { setsPerMatch: 5, pointsPerSet: 25, finalSetPoints: 15 }
+  }
 };
 
 /* ---------------------------------------------------
@@ -759,6 +762,7 @@ function setSport(sportKey, save = true) {
   // reflect in UI
   if (ptsVictoriaSel) ptsVictoriaSel.value = String(state.ptsVictoria);
   applySportTerminology();
+  renderSportSettings();
   renderMatches(); renderStandings();
   if (save) saveState();
   // update active sport button visuals
@@ -791,6 +795,105 @@ function applySportTerminology() {
     else if (sport === 'basketball') partidosP.textContent = tr('matchesDescPoints');
     else if (sport === 'esports') partidosP.textContent = tr('matchesDescMatches');
     else partidosP.textContent = tr('matchesDescSets');
+  }
+}
+
+// Return maximum number of sets to render/store for the current sport
+function getMaxSetsForSport() {
+  const sport = state.sport || 'football';
+  if (sport === 'racket') return (state.sportConfig && state.sportConfig.racket && state.sportConfig.racket.bestOf) ? state.sportConfig.racket.bestOf : 3;
+  if (sport === 'volley') return (state.sportConfig && state.sportConfig.volley && state.sportConfig.volley.setsPerMatch) ? state.sportConfig.volley.setsPerMatch : 5;
+  return 0;
+}
+
+function normalizeMatchSets(maxSets) {
+  state.matches.forEach(m => {
+    if (!m) return;
+    if (!m.setsA) m.setsA = new Array(maxSets).fill(null);
+    if (!m.setsB) m.setsB = new Array(maxSets).fill(null);
+    if (m.setsA.length !== maxSets) {
+      m.setsA = m.setsA.slice(0, maxSets).concat(new Array(Math.max(0, maxSets - m.setsA.length)).fill(null));
+    }
+    if (m.setsB.length !== maxSets) {
+      m.setsB = m.setsB.slice(0, maxSets).concat(new Array(Math.max(0, maxSets - m.setsB.length)).fill(null));
+    }
+    computeSetsTotals(m);
+  });
+}
+
+function renderSportSettings() {
+  const el = document.getElementById('sport-settings');
+  if (!el) return;
+  const sport = state.sport || 'football';
+  let html = '';
+  if (sport === 'football' || sport === 'basketball') {
+    const ptsV = (state.sportConfig && state.sportConfig[sport] && state.sportConfig[sport].ptsVictoria) ? state.sportConfig[sport].ptsVictoria : (sport === 'football' ? 3 : 2);
+    const ptsE = (state.ptsEmpate !== undefined) ? state.ptsEmpate : 1;
+    html = `
+      <div class="grid grid-cols-2 gap-3">
+        <label class="flex flex-col gap-1">Puntos por victoria
+          <input id="setting-pts-victoria" type="number" min="0" class="rounded-lg border border-ink-900/15 px-2 py-2" value="${ptsV}">
+        </label>
+        <label class="flex flex-col gap-1">Puntos por empate
+          <input id="setting-pts-empate" type="number" min="0" class="rounded-lg border border-ink-900/15 px-2 py-2" value="${ptsE}">
+        </label>
+      </div>`;
+  } else if (sport === 'racket') {
+    const cfg = state.sportConfig.racket || { bestOf:3, gamesPerSet:6, superTiebreak:false };
+    html = `
+      <div class="grid grid-cols-1 gap-3">
+        <label class="flex items-center gap-2">Formato:
+          <select id="setting-bestof" class="rounded-lg border border-ink-900/15 px-2 py-2">
+            <option value="3" ${cfg.bestOf==3? 'selected':''}>Al mejor de 3</option>
+            <option value="5" ${cfg.bestOf==5? 'selected':''}>Al mejor de 5</option>
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">Juegos por set
+          <input id="setting-gamesper" type="number" min="1" class="rounded-lg border border-ink-900/15 px-2 py-2" value="${cfg.gamesPerSet}">
+        </label>
+        <label class="flex items-center gap-2"><input id="setting-supertb" type="checkbox" ${cfg.superTiebreak? 'checked':''}> Usar super tie-break en el último set</label>
+      </div>`;
+  } else if (sport === 'volley') {
+    const cfg = state.sportConfig.volley || { setsPerMatch:5, pointsPerSet:25, finalSetPoints:15 };
+    html = `
+      <div class="grid grid-cols-1 gap-3">
+        <label class="flex items-center gap-2">Sets por partido:
+          <select id="setting-setsmatch" class="rounded-lg border border-ink-900/15 px-2 py-2">
+            <option value="3" ${cfg.setsPerMatch==3? 'selected':''}>3</option>
+            <option value="5" ${cfg.setsPerMatch==5? 'selected':''}>5</option>
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">Puntos por set
+          <input id="setting-pointsperset" type="number" min="1" class="rounded-lg border border-ink-900/15 px-2 py-2" value="${cfg.pointsPerSet}">
+        </label>
+        <label class="flex flex-col gap-1">Puntos último set (tie-break)
+          <input id="setting-finalsetpoints" type="number" min="1" class="rounded-lg border border-ink-900/15 px-2 py-2" value="${cfg.finalSetPoints}">
+        </label>
+      </div>`;
+  }
+  el.innerHTML = html;
+  // wire events
+  if (sport === 'football' || sport === 'basketball') {
+    const vEl = document.getElementById('setting-pts-victoria');
+    const eEl = document.getElementById('setting-pts-empate');
+    if (vEl) vEl.addEventListener('change', () => { const val = Number(vEl.value) || 0; state.sportConfig[sport].ptsVictoria = val; state.ptsVictoria = val; saveState(); renderStandings(); });
+    if (eEl) eEl.addEventListener('change', () => { const val = Number(eEl.value) || 0; state.ptsEmpate = val; saveState(); renderStandings(); });
+  }
+  if (sport === 'racket') {
+    const bestEl = document.getElementById('setting-bestof');
+    const gamesEl = document.getElementById('setting-gamesper');
+    const superEl = document.getElementById('setting-supertb');
+    if (bestEl) bestEl.addEventListener('change', () => { state.sportConfig.racket.bestOf = Number(bestEl.value); normalizeMatchSets(getMaxSetsForSport()); saveState(); renderMatches(); renderStandings(); });
+    if (gamesEl) gamesEl.addEventListener('change', () => { state.sportConfig.racket.gamesPerSet = Number(gamesEl.value); saveState(); });
+    if (superEl) superEl.addEventListener('change', () => { state.sportConfig.racket.superTiebreak = !!superEl.checked; saveState(); });
+  }
+  if (sport === 'volley') {
+    const setsEl = document.getElementById('setting-setsmatch');
+    const ptsEl = document.getElementById('setting-pointsperset');
+    const finalEl = document.getElementById('setting-finalsetpoints');
+    if (setsEl) setsEl.addEventListener('change', () => { state.sportConfig.volley.setsPerMatch = Number(setsEl.value); normalizeMatchSets(getMaxSetsForSport()); saveState(); renderMatches(); renderStandings(); });
+    if (ptsEl) ptsEl.addEventListener('change', () => { state.sportConfig.volley.pointsPerSet = Number(ptsEl.value); saveState(); });
+    if (finalEl) finalEl.addEventListener('change', () => { state.sportConfig.volley.finalSetPoints = Number(finalEl.value); saveState(); });
   }
 }
 
@@ -882,7 +985,7 @@ function renderTeams() {
 /* ---------------------------------------------------
    AJUSTES
 --------------------------------------------------- */
-ptsVictoriaSel.addEventListener('change', () => { state.ptsVictoria = Number(ptsVictoriaSel.value); saveState(); renderStandings(); });
+if (ptsVictoriaSel) ptsVictoriaSel.addEventListener('change', () => { state.ptsVictoria = Number(ptsVictoriaSel.value); saveState(); renderStandings(); });
 zonaDescensoIn.addEventListener('input', () => { state.zonaDescenso = Number(zonaDescensoIn.value) || 0; saveState(); renderStandings(); });
 idaVueltaChk.addEventListener('change', () => { state.idaVuelta = idaVueltaChk.checked; saveState(); });
 
@@ -913,11 +1016,14 @@ function generarCalendario() {
     rotating.splice(1, 0, rotating.pop());
   }
 
+  const maxSets = getMaxSetsForSport();
   const nuevosPartidos = [];
   let id = 1;
   jornadas.forEach((pares, idx) => {
     pares.forEach(([a, b]) => {
-      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null, setsA: [null,null,null,null,null], setsB: [null,null,null,null,null], ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
+      const setsA = new Array(maxSets).fill(null);
+      const setsB = new Array(maxSets).fill(null);
+      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null, setsA, setsB, ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
     });
   });
 
@@ -925,8 +1031,10 @@ function generarCalendario() {
     const totalIda = jornadas.length;
     jornadas.forEach((pares, idx) => {
       pares.forEach(([a, b]) => {
-        nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null, setsA: [null,null,null,null,null], setsB: [null,null,null,null,null], ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
-      });
+          const setsA = new Array(maxSets).fill(null);
+          const setsB = new Array(maxSets).fill(null);
+          nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null, setsA, setsB, ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
+        });
     });
   }
 
@@ -949,7 +1057,8 @@ btnConfirmManual.addEventListener('click', () => {
   const a = manualTeamA.value, b = manualTeamB.value;
   if (!a || !b || a === b) { alert(tr('chooseDifferentTeams')); return; }
   const maxJornada = state.matches.reduce((m, x) => Math.max(m, x.jornada), 0);
-  state.matches.push({ id: Date.now(), jornada: maxJornada + 1, a, b, sa: null, sb: null, setsA: [null,null,null,null,null], setsB: [null,null,null,null,null], ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
+  const maxSetsManual = getMaxSetsForSport();
+  state.matches.push({ id: Date.now(), jornada: maxJornada + 1, a, b, sa: null, sb: null, setsA: new Array(maxSetsManual).fill(null), setsB: new Array(maxSetsManual).fill(null), ya: null, yb: null, ra: null, rb: null, fa: null, fb: null });
   saveState();
   manualForm.classList.add('hidden');
   renderMatches();
@@ -990,8 +1099,8 @@ function renderMatches() {
       const labelB = getScoreLabel(m.b);
       let middleHtml = '';
       if (sport === 'racket' || sport === 'volley') {
-        // render up to 5 set inputs per side
-        const setsCount = 5;
+          // render set inputs per side based on sport config
+          const setsCount = getMaxSetsForSport();
         const setInputs = [];
         for (let si = 0; si < setsCount; si++) {
           const vala = (m.setsA && m.setsA[si] != null) ? m.setsA[si] : '';
@@ -1770,6 +1879,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setLanguage(lang);
   // apply stored theme
   try { const savedTheme = localStorage.getItem(THEME_KEY) || 'light'; applyTheme(savedTheme); } catch (e) { applyTheme('light'); }
+  // render sport settings for current sport
+  try { renderSportSettings(); normalizeMatchSets(getMaxSetsForSport()); } catch (e) {}
   // mobile drawer wiring
   const btnHamburger = document.getElementById('btn-hamburger');
   const drawerOverlay = document.getElementById('mobile-drawer-overlay');

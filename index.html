@@ -117,6 +117,15 @@
   .lang-active { background: var(--gold) !important; color: var(--text) !important; font-weight:700 !important; box-shadow: 0 6px 18px rgba(11,22,16,0.08); border: 1px solid rgba(0,0,0,0.06); }
   .lang-inactive { opacity: 0.7; background: transparent !important; color: rgba(255,255,255,0.95); }
   .lang-icon { font-size:14px; opacity:0.95; }
+  /* Mobile drawer styles */
+  .mobile-drawer-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.6); display: none; z-index: 80; }
+  .mobile-drawer-overlay.open { display: block; }
+  .mobile-drawer { position: fixed; right: 0; top: 0; height: 100vh; width: 86vw; max-width: 360px; background: linear-gradient(180deg,var(--accent),#07211a); color: white; transform: translateX(110%); transition: transform 260ms cubic-bezier(.2,.9,.2,1); z-index: 90; box-shadow: -20px 40px 80px rgba(2,6,23,0.6); padding: 18px; }
+  .mobile-drawer.open { transform: translateX(0%); }
+  .mobile-drawer h4 { margin:0 0 8px 0; font-weight:700; }
+  .mobile-drawer .drawer-group { margin-bottom: 12px; }
+  .drawer-sport-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background: rgba(255,255,255,0.04); margin-bottom:8px; }
+  .drawer-close { position:absolute; left:10px; top:10px; background:transparent; border:none; color:rgba(255,255,255,0.9); font-size:20px; }
 </style>
 
 <!-- html2canvas -->
@@ -188,12 +197,16 @@
       <button id="btn-share-info" aria-label="Info" title="Info" class="ml-2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-chalk-50 text-xs font-semibold flex items-center justify-center">i</button>
       <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2 hidden sm:inline"></span>
       <div class="ml-2 inline-flex items-center gap-2">
-        <div id="sport-picker" class="inline-flex items-center gap-2 mr-2 overflow-x-auto whitespace-nowrap" style="-webkit-overflow-scrolling:touch;">
+        <div id="sport-picker" class="hidden sm:inline-flex items-center gap-2 mr-2 overflow-x-auto whitespace-nowrap" style="-webkit-overflow-scrolling:touch;">
           <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
           <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Baloncesto</span></button>
           <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel/Tenis</span></button>
           <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Voleibol</span></button>
         </div>
+        <!-- hamburger visible on small screens -->
+        <button id="btn-hamburger" class="sm:hidden ml-1 p-2 rounded-md bg-transparent text-chalk-50 hover:bg-white/10" aria-label="Abrir menú" title="Menú">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <div class="language-picker inline-flex items-center gap-2">
           <span class="lang-icon" aria-hidden="true" title="Language selector">🌐</span>
           <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
@@ -203,6 +216,33 @@
     </div>
   </div>
 </header>
+
+<!-- MOBILE DRAWER -->
+<div id="mobile-drawer-overlay" class="mobile-drawer-overlay" aria-hidden="true">
+  <div id="mobile-drawer" class="mobile-drawer" role="dialog" aria-modal="true" aria-hidden="true">
+    <button class="drawer-close" id="drawer-close" aria-label="Cerrar">✕</button>
+    <h4 class="text-lg">Marcador Liguilla</h4>
+    <div class="drawer-group">
+      <div class="text-sm text-white/90 mb-2">Deportes</div>
+      <div id="drawer-sports">
+        <button class="drawer-sport-btn sport-btn" data-sport="football">⚽️ <span>Fútbol</span></button>
+        <button class="drawer-sport-btn sport-btn" data-sport="basketball">🏀 <span>Baloncesto</span></button>
+        <button class="drawer-sport-btn sport-btn" data-sport="racket">🎾 <span>Pádel/Tenis</span></button>
+        <button class="drawer-sport-btn sport-btn" data-sport="volley">🏐 <span>Voleibol</span></button>
+      </div>
+    </div>
+    <div class="drawer-group">
+      <button id="drawer-info" class="btn-secondary w-full text-left">ℹ️ Información</button>
+    </div>
+    <div class="drawer-group">
+      <div class="text-sm text-white/90 mb-2">Idioma</div>
+      <div class="inline-flex gap-2">
+        <button id="drawer-lang-es" class="lang-btn">ES</button>
+        <button id="drawer-lang-en" class="lang-btn">EN</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <main class="max-w-3xl mx-auto px-4 pb-16">
 
@@ -1730,6 +1770,24 @@ document.addEventListener('DOMContentLoaded', () => {
   setLanguage(lang);
   // apply stored theme
   try { const savedTheme = localStorage.getItem(THEME_KEY) || 'light'; applyTheme(savedTheme); } catch (e) { applyTheme('light'); }
+  // mobile drawer wiring
+  const btnHamburger = document.getElementById('btn-hamburger');
+  const drawerOverlay = document.getElementById('mobile-drawer-overlay');
+  const drawer = document.getElementById('mobile-drawer');
+  const drawerClose = document.getElementById('drawer-close');
+  function openDrawer(){ if (!drawerOverlay || !drawer) return; drawerOverlay.classList.add('open'); drawer.classList.add('open'); drawerOverlay.setAttribute('aria-hidden','false'); drawer.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; }
+  function closeDrawer(){ if (!drawerOverlay || !drawer) return; drawerOverlay.classList.remove('open'); drawer.classList.remove('open'); drawerOverlay.setAttribute('aria-hidden','true'); drawer.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; }
+  if (btnHamburger) btnHamburger.addEventListener('click', openDrawer);
+  if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+  if (drawerOverlay) drawerOverlay.addEventListener('click', (e)=>{ if (e.target === drawerOverlay) closeDrawer(); });
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeDrawer(); });
+  // drawer language buttons
+  const drawerEs = document.getElementById('drawer-lang-es'), drawerEn = document.getElementById('drawer-lang-en');
+  if (drawerEs) drawerEs.addEventListener('click', ()=>{ setLanguage('es'); closeDrawer(); });
+  if (drawerEn) drawerEn.addEventListener('click', ()=>{ setLanguage('en'); closeDrawer(); });
+  // drawer sport buttons delegate
+  const drawerSports = document.getElementById('drawer-sports');
+  if (drawerSports) drawerSports.addEventListener('click', (ev)=>{ const b = ev.target.closest('.sport-btn'); if (b && b.dataset.sport) { setSport(b.dataset.sport); closeDrawer(); } });
 });
 
 /* ---------------------------------------------------

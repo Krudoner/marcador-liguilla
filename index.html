@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- ============================= -->
+<!-- SEO ON-PAGE — ETIQUETAS META  -->
+<!-- ============================= -->
+<title>Calculadora de Puntos y Tabla de Clasificación de Fútbol en Vivo | Liguillas y Torneos</title>
+<meta name="description" content="Calcula la tabla de clasificación de tu liga, liguilla o torneo de fútbol en tiempo real. Añade equipos, introduce resultados y genera el calendario automáticamente. Gratis, sin registro y desde el móvil.">
+<meta name="keywords" content="calculadora puntos liga futbol, tabla de clasificacion futbol, generador de clasificaciones, calculadora liguilla, tabla de posiciones torneo futbol, calendario round robin futbol">
+<meta name="author" content="Marcador Liguilla">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.tudominio.com/">
+
+<!-- Open Graph / WhatsApp / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="https://www.tudominio.com/">
+<meta property="og:site_name" content="Marcador Liguilla">
+<meta property="og:title" content="Calculadora de Puntos y Tabla de Clasificación de Fútbol en Vivo">
+<meta property="og:description" content="Añade equipos, apunta los resultados y mira cómo se actualiza la tabla de tu liguilla al instante. Ideal para ligas de barrio, peñas y torneos amateur.">
+<!-- Sustituye por una imagen real de 1200x630px alojada en tu dominio -->
+<meta property="og:image" content="https://www.tudominio.com/og-marcador-liguilla.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tabla de clasificación de una liguilla de fútbol calculada en vivo">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Calculadora de Puntos y Tabla de Clasificación de Fútbol en Vivo">
+<meta name="twitter:description" content="Genera el calendario, introduce resultados y calcula la clasificación de tu liguilla en tiempo real, gratis y desde el móvil.">
+<meta name="twitter:image" content="https://www.tudominio.com/og-marcador-liguilla.jpg">
+
+<meta name="theme-color" content="#0F3D2E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230F3D2E'/%3E%3Ctext x='50' y='66' font-size='55' text-anchor='middle'%3E%E2%9A%BD%3C/text%3E%3C/svg%3E">
+
+<!-- Datos estructurados Schema.org, ayuda a Google a entender la app -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Marcador Liguilla — Calculadora de Puntos y Clasificación de Fútbol",
+  "url": "https://www.tudominio.com/",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "description": "Herramienta gratuita para calcular en tiempo real la tabla de clasificación de una liga, liguilla o torneo de fútbol amateur.",
+  "inLanguage": "es"
+}
+</script>
+
+<!-- Tailwind CSS vía CDN -->
+<link rel="stylesheet" href="./dist/styles.css">
+
+<!-- Tipografías -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background-color: #F7F6F0; }
+  h1, h2, .font-score { font-family: 'Oswald', sans-serif; }
+
+  /* Scrollbar fina en la tabla para móvil */
+  .table-scroll::-webkit-scrollbar { height: 6px; }
+  .table-scroll::-webkit-scrollbar-thumb { background: #2C7A4B; border-radius: 999px; }
+
+  /* Foco visible accesible */
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, details summary:focus-visible {
+    outline: 2px solid #E3B23C;
+    outline-offset: 2px;
+  }
+
+  /* Respeta usuarios que prefieren menos movimiento */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  .stripe-champion { border-left: 4px solid #E3B23C; }
+  .stripe-relegation { border-left: 4px solid #B4172B; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+
+  @keyframes flash-update {
+    0% { background-color: #DCEFE3; }
+    100% { background-color: transparent; }
+  }
+  .flash { animation: flash-update 0.9s ease-out; }
+</style>
+<!-- Firebase + html2canvas: reemplaza `firebaseConfig` con tus credenciales de Firebase/Firestore -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+
+<body class="text-ink-900 antialiased">
+
+<!-- =============== HEADER =============== -->
+<header class="sticky top-0 z-30 bg-pitch-900 border-b-4 border-gold-400 shadow-md">
+  <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+    <svg role="img" aria-label="Balón de fútbol" width="32" height="32" viewBox="0 0 100 100" class="shrink-0">
+      <circle cx="50" cy="50" r="46" fill="#F7F6F0" stroke="#E3B23C" stroke-width="4"/>
+      <polygon points="50,28 65,39 59,57 41,57 35,39" fill="#0F3D2E"/>
+    </svg>
+    <div>
+      <p class="font-score text-chalk-50 text-lg leading-tight tracking-wide">MARCADOR LIGUILLA</p>
+      <p class="text-chalk-100/70 text-xs leading-tight">Clasificación en vivo, sin registro</p>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <button id="btn-share-cloud" class="rounded-md bg-gold-500 hover:bg-gold-400 text-pitch-900 text-xs font-semibold px-3 py-1">Compartir liguilla</button>
+      <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2"></span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 pb-16">
+
+  <!-- =============== HERO / H1 =============== -->
+  <section class="pt-8 pb-6 text-center">
+    <h1 class="font-score text-3xl sm:text-4xl font-semibold text-pitch-900 leading-tight">
+      Calculadora de puntos y clasificación de fútbol en directo
+    </h1>
+    <p class="mt-3 text-ink-900/70 text-base max-w-xl mx-auto">
+      Añade tus equipos, genera el calendario y apunta los resultados: la tabla se actualiza sola, partido a partido.
+    </p>
+  </section>
+
+  <!-- =============== 1. EQUIPOS =============== -->
+  <section id="equipos" aria-labelledby="equipos-h2" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-5">
+    <h2 id="equipos-h2" class="font-score text-xl text-pitch-900 mb-1">1. Equipos de tu liguilla</h2>
+    <p class="text-sm text-ink-900/60 mb-4">Escribe un nombre y pulsa añadir. Necesitas al menos 2 equipos.</p>
+
+    <form id="team-form" class="flex gap-2">
+      <label for="team-input" class="sr-only">Nombre del equipo</label>
+      <input id="team-input" type="text" maxlength="24" autocomplete="off" placeholder="Ej. Atlético Bar Pepe"
+        class="flex-1 min-w-0 rounded-lg border border-ink-900/15 px-3 py-2.5 text-sm focus:border-pitch-500 outline-none">
+      <button type="submit"
+        class="shrink-0 rounded-lg bg-pitch-700 hover:bg-pitch-900 active:scale-95 transition-colors text-white text-sm font-semibold px-4 py-2.5">
+        Añadir
+      </button>
+    </form>
+
+    <ul id="team-list" class="flex flex-wrap gap-2 mt-4" aria-label="Equipos añadidos"></ul>
+    <p id="team-empty" class="text-sm text-ink-900/40 mt-4">Todavía no has añadido ningún equipo.</p>
+
+    <details class="mt-5 border-t border-ink-900/10 pt-4">
+      <summary class="cursor-pointer text-sm font-semibold text-pitch-700">Ajustes de puntuación y calendario</summary>
+      <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <label class="flex flex-col gap-1">
+          Puntos por victoria
+          <select id="pts-victoria" class="rounded-lg border border-ink-900/15 px-2 py-2">
+            <option value="3">3 puntos</option>
+            <option value="2">2 puntos</option>
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">
+          Zona de descenso (últimos)
+          <input id="zona-descenso" type="number" min="0" max="10" value="1" class="rounded-lg border border-ink-900/15 px-2 py-2">
+        </label>
+        <label class="flex items-center gap-2 col-span-2 pt-1">
+          <input id="ida-vuelta" type="checkbox" class="w-4 h-4 accent-pitch-700">
+          Calendario a ida y vuelta
+        </label>
+      </div>
+      <button id="btn-generar" type="button"
+        class="mt-4 w-full rounded-lg bg-gold-500 hover:bg-gold-400 active:scale-[.98] transition-colors text-pitch-900 text-sm font-bold py-2.5">
+        Generar calendario automático
+      </button>
+    </details>
+  </section>
+
+  <!-- =============== 2. PARTIDOS =============== -->
+  <section id="partidos" aria-labelledby="partidos-h2" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6 mb-5">
+    <div class="flex items-center justify-between mb-1">
+      <h2 id="partidos-h2" class="font-score text-xl text-pitch-900">2. Resultados</h2>
+      <button id="btn-add-match" type="button" class="text-xs font-semibold text-pitch-700 hover:text-pitch-900">
+        + Partido manual
+      </button>
+    </div>
+    <p class="text-sm text-ink-900/60 mb-4">Rellena los goles de cada equipo. La clasificación se recalcula al instante.</p>
+
+    <div id="manual-match-form" class="hidden grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto] gap-2 mb-4 items-center bg-chalk-50 rounded-lg p-3">
+      <select id="manual-team-a" class="rounded-lg border border-ink-900/15 px-2 py-2 text-sm"></select>
+      <span class="text-center text-xs text-ink-900/50">vs</span>
+      <select id="manual-team-b" class="rounded-lg border border-ink-900/15 px-2 py-2 text-sm"></select>
+      <button id="btn-confirm-manual" type="button" class="rounded-lg bg-pitch-700 text-white text-sm font-semibold px-3 py-2">Añadir</button>
+    </div>
+
+    <div id="match-list" class="space-y-5"></div>
+    <p id="match-empty" class="text-sm text-ink-900/40">Añade equipos y genera el calendario, o crea un partido manual.</p>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- ESPACIO RESERVADO PARA GOOGLE ADSENSE (no intrusivo) -->
+  <!-- Colocado entre contenido útil, nunca sobre botones -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+  <div class="my-6 text-center text-[11px] uppercase tracking-wide text-ink-900/30" aria-hidden="true">Publicidad</div>
+  <!-- ================================================= -->
+
+  <!-- =============== 3. CLASIFICACIÓN =============== -->
+  <section id="clasificacion" aria-labelledby="clasificacion-h2" class="bg-pitch-900 rounded-2xl shadow-md p-4 sm:p-6 mb-5">
+    <h2 id="clasificacion-h2" class="font-score text-xl text-chalk-50 mb-1">3. Tabla de clasificación en directo</h2>
+    <p class="text-sm text-chalk-100/60 mb-4">
+      <span class="inline-block w-3 h-3 align-middle bg-gold-400 rounded-sm mr-1"></span>Clasifica
+      <span class="inline-block w-3 h-3 align-middle bg-card-600 rounded-sm ml-3 mr-1"></span>Descenso
+    </p>
+
+    <div class="table-scroll overflow-x-auto rounded-xl border border-white/10">
+      <table class="w-full text-sm min-w-[560px]">
+        <thead>
+          <tr class="bg-pitch-700 text-chalk-50 font-score text-xs uppercase tracking-wide">
+            <th scope="col" class="py-2.5 pl-3 pr-2 text-left">#</th>
+            <th scope="col" class="py-2.5 px-2 text-left">Equipo</th>
+            <th scope="col" class="py-2.5 px-2">PJ</th>
+            <th scope="col" class="py-2.5 px-2">PG</th>
+            <th scope="col" class="py-2.5 px-2">PE</th>
+            <th scope="col" class="py-2.5 px-2">PP</th>
+            <th scope="col" class="py-2.5 px-2">GF</th>
+            <th scope="col" class="py-2.5 px-2">GC</th>
+            <th scope="col" class="py-2.5 px-2">DG</th>
+            <th scope="col" class="py-2.5 pr-3 pl-2 text-right">Pts</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body" class="text-chalk-50"></tbody>
+      </table>
+    </div>
+    <p id="standings-empty" class="text-chalk-100/50 text-sm mt-4">La tabla aparecerá aquí en cuanto añadas equipos.</p>
+    <div class="mt-4 flex gap-2">
+      <button id="btn-export-image" class="rounded-lg bg-chalk-50 text-pitch-900 text-sm font-semibold px-3 py-2">Exportar como imagen</button>
+      <button id="btn-share-link" class="rounded-lg bg-chalk-50 text-pitch-900 text-sm font-semibold px-3 py-2 hidden">Copiar enlace</button>
+    </div>
+  </section>
+
+  <!-- =============== 4. CONTENIDO SEO / FAQ =============== -->
+  <section id="ayuda" aria-labelledby="ayuda-h2" class="bg-white rounded-2xl border border-pitch-900/10 shadow-sm p-4 sm:p-6">
+    <h2 id="ayuda-h2" class="font-score text-xl text-pitch-900 mb-4">¿Cómo se calculan los puntos en una liga de fútbol?</h2>
+    <div class="space-y-4 text-sm text-ink-900/80 leading-relaxed">
+      <p>En la mayoría de ligas y liguillas de fútbol amateur, cada equipo suma <strong>3 puntos por victoria</strong>, <strong>1 punto por empate</strong> y <strong>0 puntos por derrota</strong>. Esta calculadora aplica ese sistema de forma automática cada vez que introduces un resultado.</p>
+      <p>Cuando dos o más equipos empatan a puntos, esta herramienta los ordena por <strong>diferencia de goles</strong> (goles a favor menos goles en contra) y, si el empate persiste, por goles a favor. Es el criterio de desempate más habitual en torneos y competiciones locales.</p>
+      <p>¿Necesitas repartir los partidos entre varias jornadas? El generador de calendario crea automáticamente todos los enfrentamientos por el método de todos contra todos (round robin), a una vuelta o ida y vuelta, para que no tengas que organizar el calendario a mano.</p>
+    </div>
+  </section>
+
+
+</main>
+
+  
+
+<!-- =============== FOOTER =============== -->
+<footer class="bg-pitch-900 mt-10 pt-8 pb-6 text-chalk-100/70">
+  <div class="max-w-3xl mx-auto px-4">
+    <p class="text-sm leading-relaxed">
+      Marcador Liguilla es una calculadora de puntos de liga de fútbol gratuita, pensada para organizadores de liguillas de barrio, ligas de empresa, torneos amateur y competiciones entre amigos. Con este generador de clasificaciones puedes crear el calendario de partidos, registrar resultados desde el móvil y consultar la tabla de posiciones actualizada al momento, sin necesidad de hojas de cálculo ni registrarte.
+    </p>
+
+    <!-- Espacio adicional reservado para AdSense en el pie, no intrusivo -->
+    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YYYYYYYYYY" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+
+    <p class="text-xs text-chalk-100/40 mt-6">© <span id="year"></span> Marcador Liguilla · Calculadora de clasificación de fútbol online</p>
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* ---------------------------------------------------
+   ESTADO
+--------------------------------------------------- */
+const STORAGE_KEY = 'liguilla_state_v1';
+
+let state = {
+  teams: [],           // ["Equipo A", "Equipo B", ...]
+  matches: [],          // {id, jornada, a, b, sa, sb}
+  ptsVictoria: 3,
+  zonaDescenso: 1,
+  idaVuelta: false
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = Object.assign(state, JSON.parse(raw));
+  } catch (e) { /* almacenamiento no disponible: seguimos con estado por defecto */ }
+}
+let firebaseEnabled = false;
+let firestoreDb = null;
+let cloudUnsubscribe = null;
+let isApplyingRemote = false;
+let cloudSaveTimer = null;
+const CLIENT_ID_KEY = 'liguilla_client_id_v1';
+let clientId = localStorage.getItem(CLIENT_ID_KEY) || null;
+if (!clientId) { clientId = generateShortId(); try { localStorage.setItem(CLIENT_ID_KEY, clientId); } catch (e) {} }
+
+function saveStateLocal() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function saveState() {
+  // actualizamos metadatos locales
+  state._meta = state._meta || {};
+  state._meta.updated = Date.now();
+  state._meta.writer = clientId;
+  // siempre guardamos en local
+  saveStateLocal();
+  // si tenemos sincronización en la nube activa, programamos guardado remoto
+  if (firebaseEnabled && state._cloudId && !isApplyingRemote) {
+    scheduleCloudSave();
+  }
+}
+
+function scheduleCloudSave() {
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(() => saveToCloud().catch(e => console.error(e)), 600);
+}
+
+function initFirebase() {
+  if (firebaseEnabled) return;
+  if (typeof firebase === 'undefined' || !firebase.apps) {
+    console.warn('Firebase no está disponible en la página. Revisa las scripts CDN.');
+    return;
+  }
+  // REEMPLAZA con tu configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "REPLACE_ME",
+    authDomain: "REPLACE_ME",
+    projectId: "REPLACE_ME"
+  };
+  if (!firebaseConfig.projectId || firebaseConfig.projectId === 'REPLACE_ME') {
+    console.warn('Configura firebaseConfig en el código con tus credenciales.');
+    return;
+  }
+  try {
+    firebase.initializeApp(firebaseConfig);
+    firestoreDb = firebase.firestore();
+    firebaseEnabled = true;
+    console.log('Firebase inicializado');
+  } catch (e) {
+    console.error('Error inicializando Firebase', e);
+  }
+}
+
+function generateShortId() {
+  return (Date.now().toString(36) + Math.random().toString(36).slice(2,8)).toLowerCase();
+}
+
+async function saveToCloud(force = false) {
+  if (!firebaseEnabled || !firestoreDb || !state._cloudId) return;
+  try {
+    const docRef = firestoreDb.collection('torneos').doc(String(state._cloudId));
+    // read remote meta
+    const snap = await docRef.get();
+    const remote = snap.exists ? snap.data() : null;
+    const localUpdated = state._meta && state._meta.updated ? Number(state._meta.updated) : 0;
+    if (remote && remote.updated && !force) {
+      const remoteMs = typeof remote.updated.toMillis === 'function' ? remote.updated.toMillis() : (remote.updated.seconds ? remote.updated.seconds * 1000 : 0);
+      if (remoteMs > localUpdated) {
+        // conflicto: remoto más reciente
+        if (!confirm('Hay cambios más recientes en la nube. ¿Sobrescribirlos con tu versión local?')) {
+          if (cloudStatusEl) cloudStatusEl.textContent = 'Conflicto: cambios remotos recientes';
+          return;
+        }
+      }
+    }
+
+    const copy = JSON.parse(JSON.stringify(state));
+    // attach client writer id locally (not Firestore timestamp)
+    copy._meta = Object.assign({}, state._meta, { writer: clientId });
+    // write to firestore with server timestamp
+    await docRef.set({ state: copy, updated: firebase.firestore.FieldValue.serverTimestamp(), writer: clientId }, { merge: true });
+    state._meta = state._meta || {};
+    state._meta.writer = clientId;
+    if (cloudStatusEl) cloudStatusEl.textContent = 'Guardado en la nube';
+    const shareBtn = document.getElementById('btn-share-link'); if (shareBtn) shareBtn.classList.remove('hidden');
+  } catch (e) {
+    console.error('Error guardando en la nube', e);
+    const statusEl = document.getElementById('cloud-status'); if (statusEl) statusEl.textContent = 'Error al guardar en la nube';
+  }
+}
+
+function startCloudListener(docId) {
+  if (!firebaseEnabled) initFirebase();
+  if (!firebaseEnabled || !firestoreDb) return;
+  if (cloudUnsubscribe) cloudUnsubscribe();
+  cloudUnsubscribe = firestoreDb.collection('torneos').doc(String(docId)).onSnapshot(doc => {
+    if (!doc.exists) return;
+    const data = doc.data();
+    if (!data || !data.state) return;
+    try {
+      isApplyingRemote = true;
+      // aplicamos el estado remoto
+      // but preserve local clientId
+      const incoming = data.state || {};
+      state = Object.assign({}, incoming);
+      // remote updated timestamp -> normalize to ms
+      const remoteUpdated = data.updated && typeof data.updated.toMillis === 'function' ? data.updated.toMillis() : (data.updated && data.updated.seconds ? data.updated.seconds * 1000 : Date.now());
+      state._meta = state._meta || {};
+      state._meta.updated = remoteUpdated;
+      state._meta.writer = data.writer || state._meta.writer || null;
+      saveStateLocal();
+      // re-renderizamos UI
+      ptsVictoriaSel.value = String(state.ptsVictoria || 3);
+      zonaDescensoIn.value = String(state.zonaDescenso || 1);
+      idaVueltaChk.checked = !!state.idaVuelta;
+      renderTeams();
+      renderMatches();
+      renderStandings();
+      const statusEl = document.getElementById('cloud-status'); if (statusEl) statusEl.textContent = 'Sincronizado (nube)';
+      const shareBtn = document.getElementById('btn-share-link'); if (shareBtn) shareBtn.classList.remove('hidden');
+    } finally {
+      setTimeout(() => { isApplyingRemote = false; }, 800);
+    }
+  }, err => { console.error('Listener cloud error', err); });
+}
+
+
+/* ---------------------------------------------------
+   REFERENCIAS DOM
+--------------------------------------------------- */
+const teamForm      = document.getElementById('team-form');
+const teamInput      = document.getElementById('team-input');
+const teamList       = document.getElementById('team-list');
+const teamEmpty      = document.getElementById('team-empty');
+
+const ptsVictoriaSel = document.getElementById('pts-victoria');
+const zonaDescensoIn = document.getElementById('zona-descenso');
+const idaVueltaChk   = document.getElementById('ida-vuelta');
+const btnGenerar     = document.getElementById('btn-generar');
+
+const btnAddMatch    = document.getElementById('btn-add-match');
+const manualForm     = document.getElementById('manual-match-form');
+const manualTeamA    = document.getElementById('manual-team-a');
+const manualTeamB    = document.getElementById('manual-team-b');
+const btnConfirmManual = document.getElementById('btn-confirm-manual');
+
+const matchListEl    = document.getElementById('match-list');
+const matchEmpty     = document.getElementById('match-empty');
+
+const standingsBody  = document.getElementById('standings-body');
+const standingsEmpty = document.getElementById('standings-empty');
+const btnShareCloud   = document.getElementById('btn-share-cloud');
+const cloudStatusEl   = document.getElementById('cloud-status');
+const btnExportImage  = document.getElementById('btn-export-image');
+const btnShareLink    = document.getElementById('btn-share-link');
+
+/* ---------------------------------------------------
+   EQUIPOS
+--------------------------------------------------- */
+teamForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = teamInput.value.trim();
+  if (!name) return;
+  if (state.teams.some(t => t.toLowerCase() === name.toLowerCase())) {
+    teamInput.value = '';
+    return;
+  }
+  state.teams.push(name);
+  teamInput.value = '';
+  saveState();
+  renderTeams();
+  renderStandings();
+});
+
+function removeTeam(name) {
+  const involved = state.matches.some(m => m.a === name || m.b === name);
+  if (involved && !confirm(`"${name}" tiene partidos asociados. ¿Eliminar el equipo y sus partidos?`)) return;
+  state.teams = state.teams.filter(t => t !== name);
+  state.matches = state.matches.filter(m => m.a !== name && m.b !== name);
+  saveState();
+  renderTeams();
+  renderMatches();
+  renderStandings();
+}
+
+function renderTeams() {
+  teamList.innerHTML = '';
+  teamEmpty.classList.toggle('hidden', state.teams.length > 0);
+  state.teams.forEach(name => {
+    const li = document.createElement('li');
+    li.className = 'flex items-center gap-1.5 bg-pitch-100 text-pitch-900 rounded-full pl-3 pr-1.5 py-1 text-sm font-medium';
+    li.innerHTML = `<span>${escapeHtml(name)}</span>`;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', `Eliminar ${name}`);
+    btn.className = 'w-5 h-5 flex items-center justify-center rounded-full hover:bg-pitch-900 hover:text-white text-pitch-900/60 text-xs leading-none';
+    btn.textContent = '✕';
+    btn.addEventListener('click', () => removeTeam(name));
+    li.appendChild(btn);
+    teamList.appendChild(li);
+  });
+  // refresca selects del formulario manual
+  [manualTeamA, manualTeamB].forEach(sel => {
+    sel.innerHTML = state.teams.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  });
+}
+
+/* ---------------------------------------------------
+   AJUSTES
+--------------------------------------------------- */
+ptsVictoriaSel.addEventListener('change', () => { state.ptsVictoria = Number(ptsVictoriaSel.value); saveState(); renderStandings(); });
+zonaDescensoIn.addEventListener('input', () => { state.zonaDescenso = Number(zonaDescensoIn.value) || 0; saveState(); renderStandings(); });
+idaVueltaChk.addEventListener('change', () => { state.idaVuelta = idaVueltaChk.checked; saveState(); });
+
+/* ---------------------------------------------------
+   CALENDARIO ROUND ROBIN
+--------------------------------------------------- */
+function generarCalendario() {
+  if (state.teams.length < 2) { alert('Añade al menos 2 equipos para generar el calendario.'); return; }
+  if (state.matches.length && !confirm('Esto sustituirá los partidos actuales por un calendario nuevo. ¿Continuar?')) return;
+
+  let arr = [...state.teams];
+  const bye = 'BYE';
+  if (arr.length % 2 !== 0) arr.push(bye);
+
+  const n = arr.length;
+  const rounds = n - 1;
+  const half = n / 2;
+  const jornadas = [];
+  let rotating = arr.slice();
+
+  for (let r = 0; r < rounds; r++) {
+    const pares = [];
+    for (let i = 0; i < half; i++) {
+      const a = rotating[i], b = rotating[n - 1 - i];
+      if (a !== bye && b !== bye) pares.push([a, b]);
+    }
+    jornadas.push(pares);
+    rotating.splice(1, 0, rotating.pop());
+  }
+
+  const nuevosPartidos = [];
+  let id = 1;
+  jornadas.forEach((pares, idx) => {
+    pares.forEach(([a, b]) => {
+      nuevosPartidos.push({ id: id++, jornada: idx + 1, a, b, sa: null, sb: null });
+    });
+  });
+
+  if (state.idaVuelta) {
+    const totalIda = jornadas.length;
+    jornadas.forEach((pares, idx) => {
+      pares.forEach(([a, b]) => {
+        nuevosPartidos.push({ id: id++, jornada: totalIda + idx + 1, a: b, b: a, sa: null, sb: null });
+      });
+    });
+  }
+
+  state.matches = nuevosPartidos;
+  saveState();
+  renderMatches();
+  renderStandings();
+}
+btnGenerar.addEventListener('click', generarCalendario);
+
+/* ---------------------------------------------------
+   PARTIDO MANUAL
+--------------------------------------------------- */
+btnAddMatch.addEventListener('click', () => {
+  if (state.teams.length < 2) { alert('Necesitas al menos 2 equipos.'); return; }
+  manualForm.classList.toggle('hidden');
+});
+
+btnConfirmManual.addEventListener('click', () => {
+  const a = manualTeamA.value, b = manualTeamB.value;
+  if (!a || !b || a === b) { alert('Elige dos equipos distintos.'); return; }
+  const maxJornada = state.matches.reduce((m, x) => Math.max(m, x.jornada), 0);
+  state.matches.push({ id: Date.now(), jornada: maxJornada + 1, a, b, sa: null, sb: null });
+  saveState();
+  manualForm.classList.add('hidden');
+  renderMatches();
+  renderStandings();
+});
+
+function removeMatch(id) {
+  state.matches = state.matches.filter(m => m.id !== id);
+  saveState();
+  renderMatches();
+  renderStandings();
+}
+
+/* ---------------------------------------------------
+   RENDER PARTIDOS (agrupados por jornada)
+--------------------------------------------------- */
+function renderMatches() {
+  matchListEl.innerHTML = '';
+  matchEmpty.classList.toggle('hidden', state.matches.length > 0);
+
+  const jornadas = [...new Set(state.matches.map(m => m.jornada))].sort((x, y) => x - y);
+
+  jornadas.forEach(j => {
+    const wrap = document.createElement('div');
+    const h3 = document.createElement('h3');
+    h3.className = 'font-score text-sm text-pitch-700 uppercase tracking-wide mb-2';
+    h3.textContent = `Jornada ${j}`;
+    wrap.appendChild(h3);
+
+    const rows = document.createElement('div');
+    rows.className = 'space-y-2';
+
+    state.matches.filter(m => m.jornada === j).forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 bg-chalk-50 rounded-lg px-3 py-2';
+      row.innerHTML = `
+        <span class="flex-1 text-sm font-medium text-right truncate">${escapeHtml(m.a)}</span>
+        <input type="number" min="0" max="99" inputmode="numeric" aria-label="Goles de ${escapeHtml(m.a)}"
+          class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
+          value="${m.sa ?? ''}" data-id="${m.id}" data-side="sa">
+        <span class="text-ink-900/30 text-xs">–</span>
+        <input type="number" min="0" max="99" inputmode="numeric" aria-label="Goles de ${escapeHtml(m.b)}"
+          class="score-input w-12 text-center rounded-md border border-ink-900/20 py-1.5 text-sm font-score font-semibold"
+          value="${m.sb ?? ''}" data-id="${m.id}" data-side="sb">
+        <span class="flex-1 text-sm font-medium truncate">${escapeHtml(m.b)}</span>
+        <button type="button" aria-label="Eliminar partido" data-id="${m.id}"
+          class="remove-match shrink-0 text-ink-900/30 hover:text-card-600 text-xs w-6 h-6 flex items-center justify-center">✕</button>
+      `;
+      rows.appendChild(row);
+    });
+    wrap.appendChild(rows);
+    matchListEl.appendChild(wrap);
+  });
+
+  matchListEl.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('input', onScoreChange);
+  });
+  matchListEl.querySelectorAll('.remove-match').forEach(btn => {
+    btn.addEventListener('click', () => removeMatch(Number(btn.dataset.id)));
+  });
+}
+
+function onScoreChange(e) {
+  const id = Number(e.target.dataset.id);
+  const side = e.target.dataset.side;
+  const raw = e.target.value;
+  const match = state.matches.find(m => m.id === id);
+  if (!match) return;
+  match[side] = raw === '' ? null : Math.max(0, Math.min(99, Number(raw)));
+  saveState();
+  renderStandings();
+}
+
+/* ---------------------------------------------------
+   CÁLCULO Y RENDER DE LA CLASIFICACIÓN
+--------------------------------------------------- */
+function calcularClasificacion() {
+  const tabla = {};
+  state.teams.forEach(t => {
+    tabla[t] = { equipo: t, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+  });
+
+  state.matches.forEach(m => {
+    if (m.sa === null || m.sb === null || !tabla[m.a] || !tabla[m.b]) return;
+    const A = tabla[m.a], B = tabla[m.b];
+    A.pj++; B.pj++;
+    A.gf += m.sa; A.gc += m.sb;
+    B.gf += m.sb; B.gc += m.sa;
+
+    if (m.sa > m.sb) { A.pg++; A.pts += state.ptsVictoria; B.pp++; }
+    else if (m.sa < m.sb) { B.pg++; B.pts += state.ptsVictoria; A.pp++; }
+    else { A.pe++; B.pe++; A.pts += 1; B.pts += 1; }
+  });
+
+  Object.values(tabla).forEach(t => { t.dg = t.gf - t.gc; });
+
+  return Object.values(tabla).sort((x, y) =>
+    y.pts - x.pts || y.dg - x.dg || y.gf - x.gf || x.equipo.localeCompare(y.equipo)
+  );
+}
+
+function renderStandings() {
+  const tabla = calcularClasificacion();
+  standingsEmpty.classList.toggle('hidden', tabla.length > 0);
+  standingsBody.innerHTML = '';
+
+  tabla.forEach((t, i) => {
+    const pos = i + 1;
+    const isChampionZone = pos <= 1 || (tabla.length > 3 && pos <= Math.max(1, Math.floor(tabla.length / 2) - 2));
+    const isRelegation = state.zonaDescenso > 0 && pos > tabla.length - state.zonaDescenso;
+
+    const tr = document.createElement('tr');
+    tr.className = `border-t border-white/10 ${pos === 1 ? 'stripe-champion' : ''} ${isRelegation ? 'stripe-relegation' : ''} flash`;
+    tr.innerHTML = `
+      <td class="py-2 pl-3 pr-2 font-score font-semibold">${pos}</td>
+      <td class="py-2 px-2 truncate max-w-[9rem]">${escapeHtml(t.equipo)}</td>
+      <td class="py-2 px-2 text-center">${t.pj}</td>
+      <td class="py-2 px-2 text-center">${t.pg}</td>
+      <td class="py-2 px-2 text-center">${t.pe}</td>
+      <td class="py-2 px-2 text-center">${t.pp}</td>
+      <td class="py-2 px-2 text-center">${t.gf}</td>
+      <td class="py-2 px-2 text-center">${t.gc}</td>
+      <td class="py-2 px-2 text-center">${t.dg > 0 ? '+' + t.dg : t.dg}</td>
+      <td class="py-2 pr-3 pl-2 text-right font-score font-bold text-gold-400">${t.pts}</td>
+    `;
+    standingsBody.appendChild(tr);
+  });
+}
+
+/* ---------------------------------------------------
+   UTIL
+--------------------------------------------------- */
+// --- Handlers para botones añadidos ---
+if (btnShareCloud) {
+  btnShareCloud.addEventListener('click', async () => {
+    initFirebase();
+    if (!firebaseEnabled) { alert('Configura Firebase en el código (firebaseConfig) antes de usar la nube.'); return; }
+    if (!state._cloudId) state._cloudId = generateShortId();
+    try {
+      await saveToCloud();
+      const url = new URL(window.location.href);
+      url.searchParams.set('torneo', String(state._cloudId));
+      window.history.replaceState({}, '', url.toString());
+      startCloudListener(state._cloudId);
+      if (cloudStatusEl) cloudStatusEl.textContent = 'Compartida — enlace listo';
+      if (btnShareLink) btnShareLink.classList.remove('hidden');
+    } catch (e) { console.error(e); alert('Error al compartir en la nube. Revisa la consola.'); }
+  });
+}
+
+if (btnShareLink) {
+  btnShareLink.addEventListener('click', async () => {
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      if (cloudStatusEl) cloudStatusEl.textContent = 'Enlace copiado';
+      setTimeout(() => { if (cloudStatusEl) cloudStatusEl.textContent = ''; }, 2000);
+    } catch (e) { console.error(e); alert('No se pudo copiar el enlace'); }
+  });
+}
+
+if (btnExportImage) {
+  btnExportImage.addEventListener('click', async () => {
+    const el = document.getElementById('clasificacion');
+    if (!el) return;
+    try {
+      if (cloudStatusEl) cloudStatusEl.textContent = 'Generando imagen...';
+      const canvas = await html2canvas(el, { scale: 2 });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'tabla-clasificacion.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try { await navigator.share({ files: [file], title: 'Tabla de clasificación' }); return; } catch (e) { console.warn('Share falló', e); }
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'tabla-clasificacion.png'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        if (cloudStatusEl) cloudStatusEl.textContent = '';
+      }, 'image/png');
+    } catch (e) { console.error(e); if (cloudStatusEl) cloudStatusEl.textContent = ''; alert('Error al generar la imagen'); }
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, s => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[s]));
+}
+
+/* ---------------------------------------------------
+   INICIO
+--------------------------------------------------- */
+function getQueryParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+const torneoParam = getQueryParam('torneo');
+if (torneoParam) {
+  // intento inicializar Firebase y suscribirme al documento
+  initFirebase();
+  if (firebaseEnabled) {
+    state._cloudId = torneoParam;
+    startCloudListener(torneoParam);
+  } else {
+    // si Firebase no está configurado, cargamos local y mostramos aviso
+    loadState();
+    if (cloudStatusEl) cloudStatusEl.textContent = 'Visor remoto (Firebase no configurado)';
+  }
+} else {
+  loadState();
+}
+
+ptsVictoriaSel.value = String(state.ptsVictoria);
+zonaDescensoIn.value = String(state.zonaDescenso);
+idaVueltaChk.checked = state.idaVuelta;
+renderTeams();
+renderMatches();
+renderStandings();
+</script>
+
+</body>
+</html>

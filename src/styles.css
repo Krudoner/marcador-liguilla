@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #F7F6F0;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background-color: var(--bg); }
+
+/* Focus visible */
+:where(a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, details summary:focus-visible) {
+  outline: 2px solid #E3B23C;
+  outline-offset: 2px;
+}
+
+/* Small helpers from previous inline styles */
+.table-scroll::-webkit-scrollbar { height: 6px; }
+.table-scroll::-webkit-scrollbar-thumb { background: #2C7A4B; border-radius: 999px; }
+
+.stripe-champion { border-left: 4px solid #E3B23C; }
+.stripe-relegation { border-left: 4px solid #B4172B; }
+
+@keyframes flash-update {
+  0% { background-color: #DCEFE3; }
+  100% { background-color: transparent; }
+}
+.flash { animation: flash-update 0.9s ease-out; }

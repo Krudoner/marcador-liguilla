@@ -163,6 +163,13 @@
       <button id="btn-share-info" aria-label="Info" title="Info" class="ml-2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-chalk-50 text-xs font-semibold flex items-center justify-center">i</button>
       <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2"></span>
       <div class="ml-2 inline-flex items-center gap-1">
+        <div id="sport-picker" class="inline-flex items-center gap-2 mr-2">
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="football" title="Fútbol">⚽️ <span class="ml-1">Fútbol</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="basketball" title="Baloncesto">🏀 <span class="ml-1">Basket</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="racket" title="Pádel / Tenis">🎾 <span class="ml-1">Pádel</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="volley" title="Voleibol">🏐 <span class="ml-1">Volei</span></button>
+          <button class="sport-btn text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90" data-sport="esports" title="E-Sports">🎮 <span class="ml-1">E-Sports</span></button>
+        </div>
         <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
         <button id="lang-en" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">EN</button>
       </div>
@@ -339,6 +346,8 @@ let state = {
   teams: [],
   matches: [],
   ptsVictoria: 3,
+  ptsEmpate: 1,
+  sport: 'football',
   zonaDescenso: 1,
   idaVuelta: false
 };
@@ -478,6 +487,8 @@ const ptsVictoriaSel = document.getElementById('pts-victoria');
 const zonaDescensoIn = document.getElementById('zona-descenso');
 const idaVueltaChk   = document.getElementById('ida-vuelta');
 const btnGenerar     = document.getElementById('btn-generar');
+const sportPicker    = document.getElementById('sport-picker');
+const sportButtons   = sportPicker ? Array.from(sportPicker.querySelectorAll('.sport-btn')) : [];
 
 const btnAddMatch    = document.getElementById('btn-add-match');
 const manualForm     = document.getElementById('manual-match-form');
@@ -544,6 +555,67 @@ if (modalShareCopy) {
 
 // Close modals with Escape
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModal('modal-info'); closeModal('modal-share'); } });
+
+/* ---------------------------------------------------
+   SELECTOR DE DEPORTE: lógica y terminología
+--------------------------------------------------- */
+function setSport(sportKey, save = true) {
+  state.sport = sportKey || 'football';
+  // defaults per sport
+  if (state.sport === 'football') { state.ptsVictoria = 3; state.ptsEmpate = 1; }
+  else if (state.sport === 'basketball' || state.sport === 'esports') { state.ptsVictoria = 2; state.ptsEmpate = 0; }
+  else if (state.sport === 'racket' || state.sport === 'volley') { state.ptsVictoria = 2; state.ptsEmpate = 0; }
+  // reflect in UI
+  if (ptsVictoriaSel) ptsVictoriaSel.value = String(state.ptsVictoria);
+  applySportTerminology();
+  renderMatches(); renderStandings();
+  if (save) saveState();
+  // update active sport button visuals
+  sportButtons.forEach(btn => { btn.classList.remove('bg-gold-400','text-pitch-900','font-bold'); if (btn.dataset.sport === state.sport) btn.classList.add('bg-gold-400','text-pitch-900','font-bold'); });
+}
+
+function applySportTerminology() {
+  // update table headers and small labels based on sport
+  const sport = state.sport || 'football';
+  if (sport === 'football') {
+    setText('th-gf', tr('thGF'));
+    setText('th-gc', tr('thGC'));
+    setText('th-dg', tr('thDG'));
+    // helper text
+  } else if (sport === 'basketball' || sport === 'esports') {
+    setText('th-gf', tr('thPTS') || 'Pts');
+    setText('th-gc', tr('thOPP') || 'Opp');
+    setText('th-dg', tr('thDP') || 'DP');
+  } else if (sport === 'racket' || sport === 'volley') {
+    setText('th-gf', tr('thSets') || 'Sets');
+    setText('th-gc', tr('thSetsLost') || 'Sets-');
+    setText('th-dg', tr('thSD') || 'SD');
+  }
+
+  // update paragraph that mentions goals/points in the UI description
+  const partidosP = document.querySelector('#partidos p');
+  if (partidosP) {
+    if (sport === 'football') partidosP.textContent = tr('matchesDescGoals');
+    else if (sport === 'basketball') partidosP.textContent = tr('matchesDescPoints');
+    else if (sport === 'esports') partidosP.textContent = tr('matchesDescMatches');
+    else partidosP.textContent = tr('matchesDescSets');
+  }
+}
+
+function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+
+// event delegation for sport buttons
+sportButtons.forEach(btn => {
+  btn.addEventListener('click', () => setSport(btn.dataset.sport));
+});
+
+function getScoreLabel(team) {
+  const sport = state.sport || 'football';
+  if (sport === 'football') return tr('goalsOf', { team });
+  if (sport === 'basketball') return tr('pointsOf', { team });
+  if (sport === 'esports') return tr('matchesOf', { team });
+  return tr('setsOf', { team });
+}
 
 /* ---------------------------------------------------
    UI: cloud connection helpers
@@ -721,8 +793,8 @@ function renderMatches() {
     state.matches.filter(m => m.jornada === j).forEach(m => {
       const row = document.createElement('div');
       row.className = 'flex items-center gap-2 bg-chalk-50 rounded-lg px-3 py-2';
-      const labelA = tr('goalsOf', { team: escapeHtml(m.a) });
-      const labelB = tr('goalsOf', { team: escapeHtml(m.b) });
+      const labelA = getScoreLabel(m.a);
+      const labelB = getScoreLabel(m.b);
       row.innerHTML = `
         <span class="flex-1 text-sm font-medium text-right truncate">${escapeHtml(m.a)}</span>
         <input type="number" min="0" max="99" inputmode="numeric" aria-label="${labelA}"
@@ -777,9 +849,9 @@ function calcularClasificacion() {
     A.gf += m.sa; A.gc += m.sb;
     B.gf += m.sb; B.gc += m.sa;
 
-    if (m.sa > m.sb) { A.pg++; A.pts += state.ptsVictoria; B.pp++; }
-    else if (m.sa < m.sb) { B.pg++; B.pts += state.ptsVictoria; A.pp++; }
-    else { A.pe++; B.pe++; A.pts += 1; B.pts += 1; }
+    if (m.sa > m.sb) { A.pg++; A.pts += Number(state.ptsVictoria || 0); B.pp++; }
+    else if (m.sa < m.sb) { B.pg++; B.pts += Number(state.ptsVictoria || 0); A.pp++; }
+    else { A.pe++; B.pe++; A.pts += Number(state.ptsEmpate || 0); B.pts += Number(state.ptsEmpate || 0); }
   });
 
   Object.values(tabla).forEach(t => { t.dg = t.gf - t.gc; });
@@ -927,6 +999,18 @@ const translations = {
     generatingImage: 'Generando imagen...',
     imageError: 'Error al generar la imagen',
     goalsOf: 'Goles de {team}',
+    pointsOf: 'Puntos de {team}',
+    matchesOf: 'Partidas de {team}',
+    setsOf: 'Sets de {team}',
+    thPTS: 'Puntos',
+    thDP: 'DP',
+    thSets: 'Sets',
+    thSetsLost: 'Sets-',
+    thSD: 'SD',
+    matchesDescGoals: 'Rellena los goles de cada equipo. La clasificación se recalcula al instante.',
+    matchesDescPoints: 'Rellena los puntos de cada equipo (p. ej. puntos en baloncesto). La clasificación se recalcula al instante.',
+    matchesDescMatches: 'Rellena las partidas/sets de cada enfrentamiento. La clasificación se recalcula al instante.',
+    matchesDescSets: 'Rellena los sets ganados por cada equipo. La clasificación se recalcula al instante.',
     firebaseNotConfigured: 'Configura Firebase en el código (firebaseConfig) antes de usar la nube.',
     cannotCopyLink: 'No se pudo copiar el enlace',
     viewerRemote: 'Visor remoto (Firebase no configurado)',
@@ -946,6 +1030,12 @@ const translations = {
     vsLabel: 'vs',
     legendChampion: 'Clasifica',
     legendRelegation: 'Descenso'
+    ,
+    sportFootball: 'Fútbol (11 / Sala / 7)',
+    sportBasketball: 'Baloncesto',
+    sportRacket: 'Pádel / Tenis',
+    sportVolley: 'Voleibol',
+    sportEsports: 'E-Sports'
   },
   en: {
     siteName: 'SCOREBOARD',
@@ -991,6 +1081,18 @@ const translations = {
     generatingImage: 'Generating image...',
     imageError: 'Error generating image',
     goalsOf: 'Goals for {team}',
+    pointsOf: 'Points for {team}',
+    matchesOf: 'Matches for {team}',
+    setsOf: 'Sets for {team}',
+    thPTS: 'Points',
+    thDP: 'DP',
+    thSets: 'Sets',
+    thSetsLost: 'Sets-',
+    thSD: 'SD',
+    matchesDescGoals: 'Fill goals for each team. Standings recalc instantly.',
+    matchesDescPoints: 'Fill points for each team (e.g. basketball points). Standings recalc instantly.',
+    matchesDescMatches: 'Fill match results/rounds for each matchup. Standings recalc instantly.',
+    matchesDescSets: 'Fill sets won by each team. Standings recalc instantly.',
     firebaseNotConfigured: 'Configure firebaseConfig in code before using cloud features.',
     cannotCopyLink: 'Could not copy link',
     viewerRemote: 'Remote viewer (Firebase not configured)',
@@ -1010,6 +1112,12 @@ const translations = {
     vsLabel: 'vs',
     legendChampion: 'Champ.',
     legendRelegation: 'Releg.'
+    ,
+    sportFootball: 'Football (11 / Indoor / 7)',
+    sportBasketball: 'Basketball',
+    sportRacket: 'Padel / Tennis',
+    sportVolley: 'Volleyball',
+    sportEsports: 'E-Sports'
   }
 };
 
@@ -1077,6 +1185,19 @@ function applyTranslations(lang) {
   const shareCopyBtn = document.getElementById('modal-share-copy'); if (shareCopyBtn) shareCopyBtn.textContent = t.copyLinkBtn;
   const shareCloseBtns = document.querySelectorAll('#modal-share-close, #modal-info-close'); shareCloseBtns.forEach(b => { if (b) b.textContent = t.modalClose; });
   const infoBtn = document.getElementById('btn-share-info'); if (infoBtn) { infoBtn.setAttribute('aria-label', t.infoButtonAria); infoBtn.title = t.infoButtonAria; }
+  // update sport picker labels
+  const sportEls = document.querySelectorAll('#sport-picker .sport-btn');
+  const emojiMap = { football: '⚽️', basketball: '🏀', racket: '🎾', volley: '🏐', esports: '🎮' };
+  sportEls.forEach(b => {
+    const key = b.dataset.sport;
+    let label = '';
+    if (key === 'football') label = t.sportFootball;
+    else if (key === 'basketball') label = t.sportBasketball;
+    else if (key === 'racket') label = t.sportRacket;
+    else if (key === 'volley') label = t.sportVolley;
+    else if (key === 'esports') label = t.sportEsports;
+    b.innerHTML = `${emojiMap[key] || ''} <span class="ml-1">${label}</span>`;
+  });
   // help texts
   const ayuda1 = document.getElementById('ayuda-p1'); if (ayuda1) ayuda1.innerHTML = t.ayudaP1;
   const ayuda2 = document.getElementById('ayuda-p2'); if (ayuda2) ayuda2.innerHTML = t.ayudaP2;
@@ -1151,6 +1272,8 @@ idaVueltaChk.checked = state.idaVuelta;
 renderTeams();
 renderMatches();
 renderStandings();
+// initialize sport UI
+setSport(state.sport || 'football', false);
 </script>
 
 </body>

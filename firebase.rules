@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Collection that stores shared tournaments/torneos
+    match /torneos/{docId} {
+      // Allow public reads (viewer use-case). For stricter privacy, change to require auth.
+      allow read: if true;
+
+      // Recommended: require authenticated user for writes (safer)
+      allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.writer;
+
+      // Fallback: allow public create/update only if the payload is strictly validated
+      // This is less secure than requiring auth — prefer enabling Firebase Authentication.
+      allow create, update: if request.auth == null && validPublicWrite();
+
+      // Do NOT allow deletes from anonymous public writers
+      allow delete: if request.auth != null && request.auth.uid == request.resource.data.writer;
+    }
+
+    // Basic validation helpers
+    function validPublicWrite() {
+      return request.resource.data.keys().hasAll(['state', 'updated', 'writer'])
+        && request.resource.data.state is map
+        && request.resource.data.state.teams is list
+        && request.resource.data.state.teams.size() <= 32
+        && request.resource.data.state.matches is list
+        && request.resource.data.state.matches.size() <= 1024
+        && request.resource.data.writer is string
+        && request.resource.data.writer.size() <= 64
+        && request.resource.data.updated is timestamp;
+    }
+  }
+}
+
+// Notes:
+// - These rules try to protect the collection from arbitrary large or malformed writes
+//   when anonymous/public writes are allowed. They are NOT a substitute for proper
+//   authentication and rate-limiting. Prefer the authenticated path.
+// - To deploy rules: `firebase deploy --only firestore:rules` (requires firebase-tools and project selection).

@@ -51,7 +51,7 @@
 </script>
 
 <!-- Tailwind CSS (build local) -->
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="./styles.css">
 
 <!-- Tipografías -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -86,6 +86,16 @@
     100% { background-color: transparent; }
   }
   .flash { animation: flash-update 0.9s ease-out; }
+  /* Modals */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 60; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; color: #08120f; max-width: 680px; width: 92%; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+  .modal h3 { margin: 0 0 8px 0; font-weight: 700; }
+  .modal .modal-body { margin-bottom: 12px; color: #163225; }
+  .modal .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+  .modal .readonly-input { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; background:#f8fafc; font-family:monospace; }
+  .btn-primary { background:#E3B23C; color:#07211a; padding:8px 12px; border-radius:8px; font-weight:700; border:none; cursor:pointer; }
+  .btn-secondary { background:transparent; color:#07211a; padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; cursor:pointer; }
 </style>
 
 <!-- html2canvas -->
@@ -149,7 +159,8 @@
       <p id="site-sub" class="text-chalk-100/70 text-xs leading-tight">Clasificación en vivo, sin registro</p>
     </div>
     <div class="ml-auto flex items-center gap-2">
-      <button id="btn-share-cloud" class="rounded-md bg-gold-500 hover:bg-gold-400 text-pitch-900 text-xs font-semibold px-3 py-1">Compartir liguilla</button>
+      <button id="btn-share-cloud" class="rounded-md bg-gold-500 hover:bg-gold-400 text-pitch-900 text-xs font-semibold px-3 py-1">Guardar y compartir liga</button>
+      <button id="btn-share-info" aria-label="Info" title="Info" class="ml-2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-chalk-50 text-xs font-semibold flex items-center justify-center">i</button>
       <span id="cloud-status" class="text-[11px] text-chalk-50/70 ml-2"></span>
       <div class="ml-2 inline-flex items-center gap-1">
         <button id="lang-es" class="text-[11px] px-2 py-1 rounded border border-white/10 bg-white/5 text-chalk-100/90">ES</button>
@@ -291,6 +302,30 @@
     <p id="footer-copyright" class="text-xs text-chalk-100/40 mt-6">© <span id="year"></span> Marcador Liguilla · Calculadora de clasificación de fútbol online</p>
   </div>
 </footer>
+
+<!-- INFO Modal -->
+<div id="modal-info" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal" role="document">
+    <h3 id="modal-info-title">Info</h3>
+    <div id="modal-info-body" class="modal-body">Pulsa "Guardar y compartir liga" para guardar la liga en la nube y obtener un enlace para compartir.</div>
+    <div class="modal-actions">
+      <button id="modal-info-close" class="btn-secondary">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE Modal -->
+<div id="modal-share" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal" role="document">
+    <h3 id="modal-share-title">Enlace de la liga</h3>
+    <div id="modal-share-explain" class="modal-body">Tu liga está guardada en la nube. Copia el enlace y compártelo con tus amigos.</div>
+    <input id="modal-share-input" class="readonly-input" readonly aria-label="Share link" value="">
+    <div class="modal-actions" style="margin-top:12px;">
+      <button id="modal-share-copy" class="btn-primary">Copiar enlace</button>
+      <button id="modal-share-close" class="btn-secondary">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 document.getElementById('year').textContent = new Date().getFullYear();
@@ -459,6 +494,56 @@ const btnShareCloud   = document.getElementById('btn-share-cloud');
 const cloudStatusEl   = document.getElementById('cloud-status');
 const btnExportImage  = document.getElementById('btn-export-image');
 const btnShareLink    = document.getElementById('btn-share-link');
+
+// Modal helpers
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  el.setAttribute('aria-hidden', 'false');
+  const focusable = el.querySelector('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
+  if (focusable) focusable.focus();
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  el.setAttribute('aria-hidden', 'true');
+}
+
+// Info button and modal controls
+const btnShareInfo = document.getElementById('btn-share-info');
+const modalInfoClose = document.getElementById('modal-info-close');
+const modalShare = document.getElementById('modal-share');
+const modalShareCopy = document.getElementById('modal-share-copy');
+const modalShareClose = document.getElementById('modal-share-close');
+
+if (btnShareInfo) {
+  btnShareInfo.addEventListener('click', () => openModal('modal-info'));
+}
+if (modalInfoClose) {
+  modalInfoClose.addEventListener('click', () => closeModal('modal-info'));
+}
+if (modalShareClose) {
+  modalShareClose.addEventListener('click', () => closeModal('modal-share'));
+}
+if (modalShareCopy) {
+  modalShareCopy.addEventListener('click', async () => {
+    const input = document.getElementById('modal-share-input');
+    if (!input) return;
+    try {
+      await navigator.clipboard.writeText(input.value);
+      const original = modalShareCopy.textContent;
+      modalShareCopy.textContent = tr('copied');
+      setTimeout(() => { modalShareCopy.textContent = original; }, 2000);
+      if (cloudStatusEl) cloudStatusEl.textContent = tr('linkCopied');
+      setTimeout(() => { if (cloudStatusEl) cloudStatusEl.textContent = ''; }, 2000);
+    } catch (e) { console.error(e); alert(tr('cannotCopyLink')); }
+  });
+}
+
+// Close modals with Escape
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModal('modal-info'); closeModal('modal-share'); } });
 
 /* ---------------------------------------------------
    UI: cloud connection helpers
@@ -746,6 +831,10 @@ if (btnShareCloud) {
       url.searchParams.set('torneo', String(state._cloudId));
       window.history.replaceState({}, '', url.toString());
       startCloudListener(state._cloudId);
+      // populate share modal and show it
+      const shareInput = document.getElementById('modal-share-input');
+      if (shareInput) shareInput.value = url.toString();
+      openModal('modal-share');
       if (cloudStatusEl) cloudStatusEl.textContent = tr('sharedLinkReady');
       if (btnShareLink) btnShareLink.classList.remove('hidden');
     } catch (e) { console.error(e); alert(tr('cloudShareError')); }
@@ -841,14 +930,22 @@ const translations = {
     firebaseNotConfigured: 'Configura Firebase en el código (firebaseConfig) antes de usar la nube.',
     cannotCopyLink: 'No se pudo copiar el enlace',
     viewerRemote: 'Visor remoto (Firebase no configurado)',
-    shareTitle: 'Tabla de clasificación'
-    , shareCloud: 'Compartir liguilla'
-    , footerParagraph: 'Marcador Liguilla es una calculadora de puntos de liga de fútbol gratuita, pensada para organizadores de liguillas de barrio, ligas de empresa, torneos amateur y competiciones entre amigos. Con este generador de clasificaciones puedes crear el calendario de partidos, registrar resultados desde el móvil y consultar la tabla de posiciones actualizada al momento, sin necesidad de hojas de cálculo ni registrarte.'
-    , footerCopyright: '© {year} Marcador Liguilla · Calculadora de clasificación de fútbol online'
-    , standingsEmpty: 'La tabla aparecerá aquí en cuanto añadas equipos.'
-    , vsLabel: 'vs'
-    , legendChampion: 'Clasifica'
-    , legendRelegation: 'Descenso'
+    shareTitle: 'Tabla de clasificación',
+    shareCloud: 'Guardar y compartir liga',
+    infoTitle: 'Guardar y compartir',
+    infoBody: 'Pulsa "Guardar y compartir liga" para guardar tu liga en la nube. Después obtendrás un enlace que puedes copiar y enviar a amigos por WhatsApp o redes sociales.',
+    shareModalTitle: 'Enlace de la liga',
+    shareModalExplain: 'Tu liga está guardada en la nube. Copia el enlace y compártelo con quien quieras.',
+    copyLinkBtn: 'Copiar enlace',
+    copied: '¡Copiado!',
+    modalClose: 'Cerrar',
+    infoButtonAria: 'Información sobre compartir',
+    footerParagraph: 'Marcador Liguilla es una calculadora de puntos de liga de fútbol gratuita, pensada para organizadores de liguillas de barrio, ligas de empresa, torneos amateur y competiciones entre amigos. Con este generador de clasificaciones puedes crear el calendario de partidos, registrar resultados desde el móvil y consultar la tabla de posiciones actualizada al momento, sin necesidad de hojas de cálculo ni registrarte.',
+    footerCopyright: '© {year} Marcador Liguilla · Calculadora de clasificación de fútbol online',
+    standingsEmpty: 'La tabla aparecerá aquí en cuanto añadas equipos.',
+    vsLabel: 'vs',
+    legendChampion: 'Clasifica',
+    legendRelegation: 'Descenso'
   },
   en: {
     siteName: 'SCOREBOARD',
@@ -897,14 +994,22 @@ const translations = {
     firebaseNotConfigured: 'Configure firebaseConfig in code before using cloud features.',
     cannotCopyLink: 'Could not copy link',
     viewerRemote: 'Remote viewer (Firebase not configured)',
-    shareTitle: 'Standings'
-    , shareCloud: 'Share tournament'
-    , footerParagraph: 'Marcador Liguilla is a free league points calculator, built for neighborhood tournaments, company leagues, amateur competitions and friend groups. Create schedules, record results from mobile and see the standings updated in real time — no spreadsheets, no signup.'
-    , footerCopyright: '© {year} Marcador Liguilla · Online football standings calculator'
-    , standingsEmpty: 'The table will appear here once you add teams.'
-    , vsLabel: 'vs'
-    , legendChampion: 'Champ.'
-    , legendRelegation: 'Releg.'
+    shareTitle: 'Standings',
+    shareCloud: 'Save & Share League',
+    infoTitle: 'Save & Share',
+    infoBody: 'Press "Save & Share League" to store your league in the cloud. You will then get a link you can copy and send to friends via WhatsApp or social networks.',
+    shareModalTitle: 'League link',
+    shareModalExplain: 'Your league is saved to the cloud. Copy the link and share it with anyone.',
+    copyLinkBtn: 'Copy link',
+    copied: 'Copied!',
+    modalClose: 'Close',
+    infoButtonAria: 'Sharing information',
+    footerParagraph: 'Marcador Liguilla is a free league points calculator, built for neighborhood tournaments, company leagues, amateur competitions and friend groups. Create schedules, record results from mobile and see the standings updated in real time — no spreadsheets, no signup.',
+    footerCopyright: '© {year} Marcador Liguilla · Online football standings calculator',
+    standingsEmpty: 'The table will appear here once you add teams.',
+    vsLabel: 'vs',
+    legendChampion: 'Champ.',
+    legendRelegation: 'Releg.'
   }
 };
 
@@ -964,6 +1069,14 @@ function applyTranslations(lang) {
   set('vs-label', t.vsLabel);
   set('legend-champion', t.legendChampion);
   set('legend-relegation', t.legendRelegation);
+  // modal and info texts
+  set('modal-info-title', t.infoTitle);
+  const modalInfoBody = document.getElementById('modal-info-body'); if (modalInfoBody) modalInfoBody.innerHTML = t.infoBody;
+  set('modal-share-title', t.shareModalTitle);
+  const modalShareExplain = document.getElementById('modal-share-explain'); if (modalShareExplain) modalShareExplain.innerHTML = t.shareModalExplain;
+  const shareCopyBtn = document.getElementById('modal-share-copy'); if (shareCopyBtn) shareCopyBtn.textContent = t.copyLinkBtn;
+  const shareCloseBtns = document.querySelectorAll('#modal-share-close, #modal-info-close'); shareCloseBtns.forEach(b => { if (b) b.textContent = t.modalClose; });
+  const infoBtn = document.getElementById('btn-share-info'); if (infoBtn) { infoBtn.setAttribute('aria-label', t.infoButtonAria); infoBtn.title = t.infoButtonAria; }
   // help texts
   const ayuda1 = document.getElementById('ayuda-p1'); if (ayuda1) ayuda1.innerHTML = t.ayudaP1;
   const ayuda2 = document.getElementById('ayuda-p2'); if (ayuda2) ayuda2.innerHTML = t.ayudaP2;
